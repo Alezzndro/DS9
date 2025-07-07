@@ -1,0 +1,11 @@
+{
+  "name": "turo-clone",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "npx vite"
+  },
+  "devDependencies": {
+    "vite": "^4.5.14"
+  }
+}
