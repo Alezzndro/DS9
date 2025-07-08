@@ -8,7 +8,7 @@ export default class Footer {
             <div class="container">
                 <div class="footer-content">
                     <div class="footer-section">
-                        <h3>TuroClone</h3>
+                        <h3>RideShare</h3>
                         <p>La mejor plataforma para alquilar vehículos particulares.</p>
                     </div>
                     <div class="footer-section">
@@ -29,7 +29,7 @@ export default class Footer {
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <p>&copy; ${new Date().getFullYear()} TuroClone. Todos los derechos reservados.</p>
+                    <p>&copy; ${new Date().getFullYear()} RideShare. Todos los derechos reservados.</p>
                 </div>
             </div>
         `;
