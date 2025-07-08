@@ -103,3 +103,74 @@
     z-index: 10; /* Asegura que los filtros estén sobre las tarjetas */
     margin-bottom: 0;
 }
+
+
+
+
+/*VEHICLE
+/* Vehicle List */
+.vehicle-list-container {
+    flex: 1;
+}
+
+.vehicle-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+@media (max-width: 768px) {
+    .vehicle-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Vehicle Card */
+.vehicle-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.vehicle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.vehicle-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.vehicle-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+/* Vehicle List Container Fix */
+.vehicle-list-container {
+    position: relative;
+    z-index: 2; /* Menor que los filtros pero mayor que el fondo */
+}
+
+
+
+/* Vehicle Card Z-index Fix */
+.vehicle-card {
+    position: relative;
+    z-index: auto; /* Resetea cualquier z-index heredado */
+    transform: translateZ(0); /* Crea un nuevo contexto de apilamiento */
+}
+
+/* Vehicle List Container with More Space */
+.vehicle-list-container {
+    padding-top: 40px; /* Espacio arriba del listado */
+}

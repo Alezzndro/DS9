@@ -1,4 +1,4 @@
-
+import '../css/Search.css';
 import Header from '../components/common/Header.js';
 import Filters from '../components/search/Filters.js';
 import VehicleList from '../components/search/VehicleList.js';
@@ -61,5 +61,7 @@ export default class Search {
         
         return page;
     }
+
+    
 }
 
