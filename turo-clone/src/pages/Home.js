@@ -1,6 +1,9 @@
+import '../css/Home.css';
+import '../css/header.css';
 import Header from '../components/common/Header.js';
 import Login from '../components/auth/Login.js';
 import Register from '../components/auth/Register.js';
+
 
 export default class Home {
     constructor() {

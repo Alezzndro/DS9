@@ -1,3 +1,4 @@
+import '../css/Dashboard.css';
 import Header from '../components/common/Header.js';
 import VehicleCard from '../components/dashboard/VehicleCard.js';
 import ReservationCard from '../components/dashboard/ReservationCard.js';

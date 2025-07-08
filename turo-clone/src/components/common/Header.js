@@ -1,3 +1,5 @@
+import '../../css/header.css';
+
 export default class Header {
     render() {
         const header = document.createElement('header');

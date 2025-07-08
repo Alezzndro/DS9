@@ -1,3 +1,5 @@
+import '../../css/footer.css';
+
 export default class Footer {
     render() {
         const footer = document.createElement('footer');

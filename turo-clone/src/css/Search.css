@@ -1,0 +1,105 @@
+/* Search Page Styles */
+.search-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.search-container {
+    padding-top: 30px;
+    padding-bottom: 60px;
+}
+
+.search-container h1 {
+    font-size: 2.2rem;
+    color: var(--dark-color);
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+/* Search Layout */
+.search-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+@media (max-width: 992px) {
+    .search-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Filters Section */
+.search-filters {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    position: sticky;
+    top: 20px;
+}
+
+.search-filters h3 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: var(--dark-color);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Search Page Layout Fixes */
+.search-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Añadido para contexto de z-index */
+}
+
+.search-container {
+    padding-top: 30px;
+    padding-bottom: 60px;
+    position: relative; /* Añadido */
+    z-index: 1; /* Asegura que el contenido esté por encima del fondo */
+}
+
+.search-container h1 {
+    font-size: 2.2rem;
+    color: var(--dark-color);
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+/* Search Layout Fixed */
+.search-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+@media (max-width: 992px) {
+    .search-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-filters {
+        position: static; /* Elimina sticky en móviles */
+        margin-bottom: 30px;
+    }
+}
+
+/* Filters Section Fixed */
+.search-filters {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    position: sticky;
+    top: 100px; /* Ajustado para dejar espacio para el header */
+    z-index: 10; /* Asegura que los filtros estén sobre las tarjetas */
+    margin-bottom: 0;
+}
