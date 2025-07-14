@@ -9,20 +9,12 @@ export default class Header {
                     <a href="/" class="logo" data-link>RideShare</a>
                     <div class="nav-links">
                         <a href="/search" data-link>Buscar vehículos</a>
-                        <a href="#" id="loginBtn">Iniciar sesión</a>
+                        <a href="/login" data-link>Iniciar sesión</a>
                         <a href="/register" class="btn btn-primary" data-link>Registrarse</a>
                     </div>
                 </nav>
             </div>
         `;
-        
-        header.querySelector('#loginBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            const Login = () => console.log('Login modal'); // Temporal
-            const loginModal = new Login();
-            document.body.appendChild(loginModal.render());
-        });
-        
         return header;
     }
 }

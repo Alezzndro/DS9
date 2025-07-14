@@ -1,0 +1,111 @@
+.user-profile {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    max-width: 600px;
+    margin: 2rem auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.profile-header .avatar {
+    width: 72px;
+    height: 72px;
+    background-color: #4f46e5;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+}
+
+.profile-header h2 {
+    font-size: 1.4rem;
+    margin: 0;
+    color: #333;
+}
+
+.profile-header p {
+    font-size: 0.95rem;
+    color: #555;
+    margin: 0;
+}
+
+.verification-status {
+    background-color: #f9fafb;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.verification-status h4 {
+    margin: 0 0 0.75rem 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.verification-status ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0 0 1rem 0;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.verification-status li {
+    margin-bottom: 0.5rem;
+}
+
+.status-approved {
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+.status-pending {
+    color: #f9a825;
+    font-weight: 600;
+}
+
+.status-rejected {
+    color: #c62828;
+    font-weight: 600;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #4f46e5;
+    border: 1px solid #4f46e5;
+}
+
+.btn-outline:hover {
+    background-color: #f3f4f6;
+}

@@ -1,0 +1,152 @@
+.reservation-card {
+    display: flex;
+    gap: 1.5rem;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.3s ease;
+}
+
+.reservation-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.reservation-image img {
+    width: 200px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.reservation-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.reservation-details h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.35em 0.75em;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    width: fit-content;
+}
+
+.badge-active {
+    background-color: #e6f4ea;
+    color: #2e7d32;
+}
+
+.badge-completed {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.badge-cancelled {
+    background-color: #fdecea;
+    color: #c62828;
+}
+
+.badge-pending {
+    background-color: #fff8e1;
+    color: #f9a825;
+}
+
+.reservation-dates, .reservation-total {
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.reservation-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.reservation-actions .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #4338ca;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #4f46e5;
+    border: 1px solid #4f46e5;
+}
+
+.btn-outline:hover {
+    background-color: #f3f4f6;
+}
+
+@media (max-width: 768px) {
+    .reservation-card {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .reservation-image img {
+        width: 100%;
+        height: auto;
+    }
+
+    .reservation-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+
+
+
+
+/* Añade estas reglas al CSS existente */
+.reservation-card {
+    position: relative; /* Para que el badge posicionado absolutamente se relacione con este contenedor */
+}
+
+/* Estilo para el badge cuando está fuera de reservation-details */
+.reservation-card > .badge {
+    position: absolute;
+    top: 1.5rem; /* Igual que el padding del card */
+    right: 1.5rem; /* Igual que el padding del card */
+    margin-top: 0;
+}
+
+/* Ajustes para responsive */
+@media (max-width: 768px) {
+    .reservation-card > .badge {
+        position: static;
+        margin-top: 0.5rem;
+        align-self: flex-end; /* Alinea a la derecha en móvil */
+    }
+    
+    .reservation-card {
+        align-items: flex-start; /* Asegura que el badge no se centre */
+    }
+}

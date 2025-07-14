@@ -1,145 +1,149 @@
-/* Dashboard.css - Estilo para el panel de control */
-
-/* Estructura principal */
 .dashboard-page {
-    background-color: #f8f9fa;
     min-height: 100vh;
+    background: #f9fafb;
+    font-family: 'Inter', sans-serif;
+    color: #111827;
+    padding-bottom: 3rem;
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 2rem 1rem;
 }
 
-/* Mensaje de bienvenida */
 .welcome-message {
-    margin-bottom: 30px;
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
 .welcome-message h1 {
-    font-size: 2.2rem;
-    color: #333;
-    margin-bottom: 10px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #4f46e5;
 }
 
 .welcome-message p {
-    font-size: 1.1rem;
-    color: #666;
+    font-size: 1.2rem;
+    color: #6b7280;
 }
 
-/* Pestañas del dashboard */
+/* Tabs container */
 .dashboard-tabs {
     display: flex;
-    border-bottom: 1px solid #ddd;
-    margin-bottom: 30px;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e5e7eb;
 }
 
-.tab {
-    padding: 12px 24px;
+.dashboard-tabs .tab {
     background: none;
     border: none;
-    border-bottom: 3px solid transparent;
     font-size: 1rem;
-    font-weight: 600;
-    color: #666;
+    padding: 0.75rem 1.5rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    color: #6b7280;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+    transition: color 0.3s, border-bottom-color 0.3s;
+    border-radius: 4px 4px 0 0;
 }
 
-.tab:hover {
-    color: #00a8e8;
+.dashboard-tabs .tab:hover {
+    color: #4338ca;
 }
 
-.tab.active {
-    color: #00a8e8;
-    border-bottom-color: #00a8e8;
+.dashboard-tabs .tab.active {
+    color: #4338ca;
+    border-bottom-color: #4338ca;
+    font-weight: 700;
 }
 
-/* Contenido del dashboard */
+/* Content area */
 .dashboard-content {
     background: white;
-    border-radius: 8px;
-    padding: 30px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    padding: 2rem;
+    min-height: 300px;
 }
 
-/* Sección de reservas */
-.reservations-container h3,
-.vehicles-header h3 {
-    font-size: 1.4rem;
-    color: #333;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+    font-size: 1.1rem;
 }
 
-/* Sección de vehículos */
+.empty-state p {
+    margin-bottom: 1.5rem;
+}
+
+.empty-state .btn {
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Vehicles tab header */
 .vehicles-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 1.5rem;
+}
+
+.vehicles-header h3 {
+    font-size: 1.75rem;
+    color: #111827;
+    font-weight: 700;
 }
 
 .add-vehicle-btn {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-}
-
-/* Estados vacíos */
-.empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: #666;
-}
-
-.empty-state p {
-    margin-bottom: 20px;
-}
-
-/* Cards de vehículos y reservas (estilos base) */
-.card {
-    background: white;
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.2rem;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
-    overflow: hidden;
-    transition: transform 0.3s ease;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.add-vehicle-btn:hover {
+    background-color: #4338ca;
+}
+
+/* Reservations headers */
+.reservations-container h3 {
+    font-size: 1.5rem;
+    color: #4338ca;
+    margin-bottom: 1rem;
+}
+
+/* Profile container */
+.profile-container {
+    max-width: 480px;
+    margin: 0 auto;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .dashboard-tabs {
         flex-direction: column;
-        border-bottom: none;
+        gap: 0.75rem;
+        align-items: center;
     }
-    
-    .tab {
-        border-bottom: none;
-        border-left: 3px solid transparent;
-        text-align: left;
-    }
-    
-    .tab.active {
-        border-left-color: #00a8e8;
-    }
-    
+
     .vehicles-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 1rem;
     }
-    
-    .vehicles-header h3 {
-        margin-bottom: 15px;
-    }
-    
-    .add-vehicle-btn {
-        width: 100%;
+
+    .dashboard-content {
+        padding: 1.25rem;
     }
 }

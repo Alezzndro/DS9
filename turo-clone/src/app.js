@@ -3,6 +3,10 @@ import Search from './pages/Search.js';
 import Dashboard from './pages/Dashboard.js';
 import Admin from './pages/Admin.js';
 import NotFound from './pages/NotFound.js';
+
+import Login from './components/auth/Login.js';
+import Register from './components/auth/Register.js'; // Asegúrate de que exista
+
 import { navigateTo } from './utils/helpers.js';
 import { verifyAuth, getUserData } from './services/authService.js';
 
@@ -10,8 +14,8 @@ export default class App {
     constructor() {
         this.routes = {
             '/': Home,
-            '/login': () => console.log('Login page'),
-            '/register': () => console.log('Register page'),
+            '/login': Login,
+            '/register': Register,
             '/search': Search,
             '/dashboard': Dashboard,
             '/admin': Admin,
@@ -30,19 +34,16 @@ export default class App {
         const user = getUserData();
         const currentPath = window.location.pathname;
 
-        // Redirigir si no está autenticado y trata de acceder a rutas protegidas
         if (!isAuthenticated && (currentPath.startsWith('/dashboard') || currentPath.startsWith('/admin'))) {
             navigateTo('/login');
             return;
         }
 
-        // Redirigir si es usuario normal y trata de acceder al admin
         if (isAuthenticated && user.role !== 'admin' && currentPath.startsWith('/admin')) {
             navigateTo('/dashboard');
             return;
         }
 
-        // Redirigir si ya está autenticado y trata de acceder a login/register
         if (isAuthenticated && (currentPath === '/login' || currentPath === '/register')) {
             navigateTo('/dashboard');
             return;
@@ -51,22 +52,23 @@ export default class App {
 
     renderPage() {
         const path = window.location.pathname;
-        const page = this.routes[path] || this.routes['/404'];
-        
+        const PageClass = this.routes[path] || this.routes['/404'];
+
         const appContainer = document.getElementById('app');
         appContainer.innerHTML = '';
-        
-        const pageInstance = new page();
+
+        const pageInstance = new PageClass();
         appContainer.appendChild(pageInstance.render());
     }
 
     setupNavigation() {
         window.addEventListener('popstate', () => this.renderPage());
-        
+
         document.addEventListener('click', (e) => {
-            if (e.target.matches('[data-link]')) {
+            const target = e.target.closest('[data-link]');
+            if (target) {
                 e.preventDefault();
-                navigateTo(e.target.href);
+                navigateTo(target.getAttribute('href'));
                 this.renderPage();
             }
         });

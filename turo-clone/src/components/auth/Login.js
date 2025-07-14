@@ -1,7 +1,9 @@
 import { validateEmail } from '../../utils/validators.js';
 import Notification from '../common/Notification.js';
+import '../css/Login.css';
 
-export default class Login {
+
+export default class LoginPage {
     constructor() {
         this.state = {
             email: '',
@@ -13,40 +15,38 @@ export default class Login {
     handleInputChange(e) {
         const { name, value } = e.target;
         this.state[name] = value;
-        
+
         if (name === 'email') {
             this.state.errors.email = validateEmail(value) ? null : 'Email no válido';
         }
-        
+
         this.updateForm();
     }
 
     handleSubmit(e) {
         e.preventDefault();
-        
+
         const errors = {};
         if (!validateEmail(this.state.email)) errors.email = 'Email no válido';
         if (!this.state.password) errors.password = 'Contraseña es requerida';
-        
+
         this.state.errors = errors;
         this.updateForm();
-        
+
         if (Object.keys(errors).length === 0) {
-            // Simulación de login exitoso
             const notification = new Notification('Inicio de sesión exitoso!', 'success');
             document.body.appendChild(notification.render());
-            
+
             setTimeout(() => {
                 window.history.pushState({}, '', '/dashboard');
                 window.dispatchEvent(new PopStateEvent('popstate'));
-                document.body.removeChild(this.modal);
             }, 1500);
         }
     }
 
     updateForm() {
         Object.keys(this.state.errors).forEach(key => {
-            const errorElement = this.modal.querySelector(`.error-${key}`);
+            const errorElement = this.container.querySelector(`.error-${key}`);
             if (errorElement) {
                 errorElement.textContent = this.state.errors[key] || '';
             }
@@ -54,11 +54,10 @@ export default class Login {
     }
 
     render() {
-        this.modal = document.createElement('div');
-        this.modal.className = 'modal';
-        this.modal.innerHTML = `
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
+        this.container = document.createElement('div');
+        this.container.className = 'login-page';
+        this.container.innerHTML = `
+            <div class="login-form-container">
                 <h2>Iniciar sesión</h2>
                 <form id="loginForm">
                     <div class="form-group">
@@ -76,30 +75,18 @@ export default class Login {
                 <p>¿No tienes una cuenta? <a href="#" id="registerLink">Regístrate</a></p>
             </div>
         `;
-        
-        this.modal.querySelector('#loginForm').addEventListener('submit', (e) => this.handleSubmit(e));
-        this.modal.querySelectorAll('input').forEach(input => {
+
+        this.container.querySelector('#loginForm').addEventListener('submit', (e) => this.handleSubmit(e));
+        this.container.querySelectorAll('input').forEach(input => {
             input.addEventListener('input', (e) => this.handleInputChange(e));
         });
-        
-        this.modal.querySelector('.close-modal').addEventListener('click', () => {
-            document.body.removeChild(this.modal);
-        });
-        
-        this.modal.querySelector('#registerLink').addEventListener('click', (e) => {
+
+        this.container.querySelector('#registerLink').addEventListener('click', (e) => {
             e.preventDefault();
-            document.body.removeChild(this.modal);
-            const Register = () => console.log('Register modal'); // Temporal
-            const registerModal = new Register();
-            document.body.appendChild(registerModal.render());
+            window.history.pushState({}, '', '/register');
+            window.dispatchEvent(new PopStateEvent('popstate'));
         });
-        
-        this.modal.addEventListener('click', (e) => {
-            if (e.target === this.modal) {
-                document.body.removeChild(this.modal);
-            }
-        });
-        
-        return this.modal;
+
+        return this.container;
     }
 }

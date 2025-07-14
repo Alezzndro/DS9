@@ -1,5 +1,11 @@
 import '../css/Dashboard.css';
 import Header from '../components/common/Header.js';
+import '../css/ReservationCard.css';
+import '../css/UserProfile.css';
+import '../css/VehicleCard.css';
+
+
+
 import VehicleCard from '../components/dashboard/VehicleCard.js';
 import ReservationCard from '../components/dashboard/ReservationCard.js';
 import UserProfile from '../components/dashboard/UserProfile.js';
@@ -94,9 +100,17 @@ export default class Dashboard {
     }
 
     handleTabChange(tab) {
-        this.state.activeTab = tab;
-        this.renderContent();
+    this.state.activeTab = tab;
+    // Actualizar los tabs
+    const tabsContainer = document.querySelector('.dashboard-tabs');
+    if (tabsContainer) {
+        tabsContainer.replaceWith(this.renderTabs());
     }
+    // Actualizar el contenido
+    this.contentContainer.innerHTML = '';
+    this.contentContainer.appendChild(this.renderContent());
+}
+
 
     handleAddVehicle() {
         console.log('Añadir nuevo vehículo');
@@ -233,26 +247,32 @@ export default class Dashboard {
     }
 
     render() {
-        const page = document.createElement('div');
-        page.className = 'dashboard-page';
-        
-        page.appendChild(this.header.render());
-        
-        const container = document.createElement('div');
-        container.className = 'container';
-        
-        const welcome = document.createElement('div');
-        welcome.className = 'welcome-message';
-        welcome.innerHTML = `
-            <h1>Bienvenido, ${this.state.user.name.split(' ')[0]}</h1>
-            <p>¿Qué te gustaría hacer hoy?</p>
-        `;
-        container.appendChild(welcome);
-        
-        container.appendChild(this.renderTabs());
-        container.appendChild(this.renderContent());
-        
-        page.appendChild(container);
-        return page;
-    }
+    const page = document.createElement('div');
+    page.className = 'dashboard-page';
+
+    page.appendChild(this.header.render());
+
+    const container = document.createElement('div');
+    container.className = 'container';
+
+    const welcome = document.createElement('div');
+    welcome.className = 'welcome-message';
+    welcome.innerHTML = `
+        <h1>Bienvenido, ${this.state.user.name.split(' ')[0]}</h1>
+        <p>¿Qué te gustaría hacer hoy?</p>
+    `;
+    container.appendChild(welcome);
+    
+    // Renderizar tabs
+    container.appendChild(this.renderTabs());
+
+    this.contentContainer = document.createElement('div');
+    this.contentContainer.className = 'dashboard-content';
+    this.contentContainer.appendChild(this.renderContent());
+
+    container.appendChild(this.contentContainer);
+    page.appendChild(container);
+    return page;
+}
+
 }

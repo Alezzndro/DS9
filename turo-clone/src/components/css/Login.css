@@ -1,0 +1,106 @@
+/* Estilos encapsulados para la página de login */
+.login-page {
+    min-height: 100vh;
+    background-color: #f9fafb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    color: #111827;
+    padding: 2rem;
+}
+
+.login-page .login-form-container {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.login-page h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #4f46e5;
+    margin-bottom: 1.5rem;
+}
+
+/* Formulario */
+.login-page form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    text-align: left;
+}
+
+.login-page .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.login-page label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.login-page input[type="email"],
+.login-page input[type="password"] {
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+
+.login-page input[type="email"]:focus,
+.login-page input[type="password"]:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+.login-page .error-message {
+    font-size: 0.85rem;
+    color: #ef4444;
+    min-height: 1em;
+}
+
+/* Botón primario */
+.login-page .btn.btn-primary {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.login-page .btn.btn-primary:hover {
+    background-color: #4338ca;
+}
+
+/* Enlace inferior */
+.login-page p {
+    margin-top: 1.5rem;
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+
+.login-page a {
+    color: #4f46e5;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.login-page a:hover {
+    text-decoration: underline;
+}
