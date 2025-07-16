@@ -68,29 +68,3 @@ export async function verifyAuth() {
     }
 }
 
-export async function uploadIDDocument(file) {
-    try {
-        const response = await uploadFile('/users/upload-id', file);
-        return response;
-    } catch (error) {
-        throw error;
-    }
-}
-
-export async function uploadDriverLicense(file) {
-    try {
-        const response = await uploadFile('/users/upload-license', file);
-        return response;
-    } catch (error) {
-        throw error;
-    }
-}
-
-export async function checkVerificationStatus() {
-    try {
-        const response = await apiRequest('/users/verification-status');
-        return response;
-    } catch (error) {
-        throw error;
-    }
-}

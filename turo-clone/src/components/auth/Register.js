@@ -1,4 +1,5 @@
 import { validateEmail, validatePassword } from '../../utils/validators.js';
+import { register } from '../../services/authService.js';
 import Notification from '../common/Notification.js';
 
 export default class Register {
@@ -27,28 +28,33 @@ export default class Register {
         this.updateForm();
     }
 
-    handleSubmit(e) {
+    async handleSubmit(e) {
         e.preventDefault();
-        
         // Validación final antes de enviar
         const errors = {};
         if (!this.state.name) errors.name = 'Nombre es requerido';
         if (!validateEmail(this.state.email)) errors.email = 'Email no válido';
         if (!validatePassword(this.state.password)) errors.password = 'La contraseña debe tener al menos 8 caracteres';
-        
         this.state.errors = errors;
         this.updateForm();
-        
         if (Object.keys(errors).length === 0) {
-            // Aquí iría la llamada al API
-            const notification = new Notification('Registro exitoso! Redirigiendo...', 'success');
-            document.body.appendChild(notification.render());
-            
-            setTimeout(() => {
-                window.history.pushState({}, '', '/login');
-                window.dispatchEvent(new PopStateEvent('popstate'));
-                document.body.removeChild(this.modal);
-            }, 2000);
+            try {
+                await register({
+                    name: this.state.name,
+                    email: this.state.email,
+                    password: this.state.password
+                });
+                const notification = new Notification('Registro exitoso! Redirigiendo...', 'success');
+                document.body.appendChild(notification.render());
+                setTimeout(() => {
+                    window.history.pushState({}, '', '/login');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                    document.body.removeChild(this.modal);
+                }, 2000);
+            } catch (error) {
+                this.state.errors.general = error.message || 'Error al registrarse';
+                this.updateForm();
+            }
         }
     }
 
@@ -60,6 +66,11 @@ export default class Register {
                 errorElement.textContent = this.state.errors[key] || '';
             }
         });
+        // Mostrar error general si existe
+        const generalError = this.modal.querySelector('.error-general');
+        if (generalError) {
+            generalError.textContent = this.state.errors.general || '';
+        }
     }
 
     render() {
@@ -85,6 +96,7 @@ export default class Register {
                         <input type="password" id="password" name="password" required>
                         <div class="error-password error-message"></div>
                     </div>
+                    <div class="error-general error-message"></div>
                     <button type="submit" class="btn btn-primary">Registrarse</button>
                 </form>
                 <p>¿Ya tienes una cuenta? <a href="#" id="loginLink">Inicia sesión</a></p>

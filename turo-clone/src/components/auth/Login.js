@@ -1,4 +1,5 @@
 import { validateEmail } from '../../utils/validators.js';
+import { login } from '../../services/authService.js';
 import Notification from '../common/Notification.js';
 import '../css/Login.css';
 
@@ -23,7 +24,7 @@ export default class LoginPage {
         this.updateForm();
     }
 
-    handleSubmit(e) {
+    async handleSubmit(e) {
         e.preventDefault();
 
         const errors = {};
@@ -34,13 +35,18 @@ export default class LoginPage {
         this.updateForm();
 
         if (Object.keys(errors).length === 0) {
-            const notification = new Notification('Inicio de sesión exitoso!', 'success');
-            document.body.appendChild(notification.render());
-
-            setTimeout(() => {
-                window.history.pushState({}, '', '/dashboard');
-                window.dispatchEvent(new PopStateEvent('popstate'));
-            }, 1500);
+            try {
+                await login(this.state.email, this.state.password);
+                const notification = new Notification('Inicio de sesión exitoso!', 'success');
+                document.body.appendChild(notification.render());
+                setTimeout(() => {
+                    window.history.pushState({}, '', '/dashboard');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                }, 1500);
+            } catch (error) {
+                this.state.errors.general = error.message || 'Error al iniciar sesión';
+                this.updateForm();
+            }
         }
     }
 
@@ -51,6 +57,11 @@ export default class LoginPage {
                 errorElement.textContent = this.state.errors[key] || '';
             }
         });
+        // Mostrar error general si existe
+        const generalError = this.container.querySelector('.error-general');
+        if (generalError) {
+            generalError.textContent = this.state.errors.general || '';
+        }
     }
 
     render() {
@@ -70,6 +81,7 @@ export default class LoginPage {
                         <input type="password" id="password" name="password" required>
                         <div class="error-password error-message"></div>
                     </div>
+                    <div class="error-general error-message"></div>
                     <button type="submit" class="btn btn-primary">Iniciar sesión</button>
                 </form>
                 <p>¿No tienes una cuenta? <a href="#" id="registerLink">Regístrate</a></p>
