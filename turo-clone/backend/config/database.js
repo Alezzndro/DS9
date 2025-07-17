@@ -6,13 +6,13 @@ export const connectDB = async () => {
         
         await mongoose.connect(mongoURI);
         
-        console.log('✅ Conectado a MongoDB');
+        console.log('Conectado a MongoDB');
         
         // Crear índices necesarios
         await createIndexes();
         
     } catch (error) {
-        console.error('❌ Error conectando a MongoDB:', error.message);
+        console.error('Error conectando a MongoDB:', error.message);
         process.exit(1);
     }
 };
@@ -25,10 +25,10 @@ const createIndexes = async () => {
         // Índice único para email
         await User.collection.createIndex({ email: 1 }, { unique: true });
         
-        console.log('✅ Índices creados correctamente');
+        console.log('Índices creados correctamente');
     } catch (error) {
         // Los índices ya existen o hay un error
-        console.log('ℹ️ Índices ya existen o error creándolos:', error.message);
+        console.log('ℹÍndices ya existen o error creándolos:', error.message);
     }
 };
 
@@ -38,16 +38,16 @@ mongoose.connection.on('connected', () => {
 });
 
 mongoose.connection.on('error', (err) => {
-    console.error('❌ Error de conexión MongoDB:', err);
+    console.error('Error de conexión MongoDB:', err);
 });
 
 mongoose.connection.on('disconnected', () => {
-    console.log('🔌 Mongoose desconectado de MongoDB');
+    console.log('Mongoose desconectado de MongoDB');
 });
 
 // Cerrar conexión cuando la aplicación termine
 process.on('SIGINT', async () => {
     await mongoose.connection.close();
-    console.log('🔌 Conexión MongoDB cerrada por terminación de la aplicación');
+    console.log('Conexión MongoDB cerrada por terminación de la aplicación');
     process.exit(0);
 });

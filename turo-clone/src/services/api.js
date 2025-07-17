@@ -27,21 +27,45 @@ export async function apiRequest(endpoint, method = 'GET', body = null, requires
         const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
         
         if (response.status === 401) {
-            // Token inválido o expirado
+            // Para rutas de login, mostrar mensaje específico
+            if (endpoint.includes('/login')) {
+                throw new Error('Credenciales inválidas. Verifica tu email y contraseña.');
+            }
+            // Para otras rutas, token inválido o expirado
             removeAuthToken();
-            window.location.href = '/login';
-            return;
+            throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
         }
 
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            throw new Error('Error al procesar la respuesta del servidor');
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || 'Something went wrong');
+            // Manejar diferentes tipos de error
+            if (response.status === 400) {
+                throw new Error(data.message || 'Datos incorrectos');
+            } else if (response.status === 404) {
+                throw new Error(data.message || 'Recurso no encontrado');
+            } else if (response.status === 500) {
+                throw new Error('Error interno del servidor. Intenta más tarde.');
+            } else {
+                throw new Error(data.message || 'Error desconocido');
+            }
         }
 
         return data;
     } catch (error) {
         console.error('API request failed:', error);
+        
+        // Si es un error de red
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Error de conexión. Verifica tu conexión a internet.');
+        }
+        
+        // Re-lanzar el error para que lo maneje el componente
         throw error;
     }
 }

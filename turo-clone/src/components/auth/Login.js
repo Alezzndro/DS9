@@ -1,7 +1,6 @@
 import { validateEmail } from '../../utils/validators.js';
 import { login } from '../../services/authService.js';
 import Notification from '../common/Notification.js';
-import '../css/Login.css';
 
 
 export default class LoginPage {
@@ -27,6 +26,10 @@ export default class LoginPage {
     async handleSubmit(e) {
         e.preventDefault();
 
+        // Limpiar errores previos
+        this.state.errors = {};
+        this.updateForm();
+
         const errors = {};
         if (!validateEmail(this.state.email)) errors.email = 'Email no válido';
         if (!this.state.password) errors.password = 'Contraseña es requerida';
@@ -36,32 +39,52 @@ export default class LoginPage {
 
         if (Object.keys(errors).length === 0) {
             try {
+                // Mostrar indicador de carga
+                const submitBtn = this.container.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Iniciando sesión...';
+                submitBtn.disabled = true;
+                
                 await login(this.state.email, this.state.password);
+                
                 const notification = new Notification('Inicio de sesión exitoso!', 'success');
                 document.body.appendChild(notification.render());
+                
                 setTimeout(() => {
                     window.history.pushState({}, '', '/dashboard');
                     window.dispatchEvent(new PopStateEvent('popstate'));
                 }, 1500);
+                
             } catch (error) {
-                this.state.errors.general = error.message || 'Error al iniciar sesión';
+                // Restaurar botón
+                const submitBtn = this.container.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.textContent = 'Iniciar sesión';
+                    submitBtn.disabled = false;
+                }
+                
+                // Mostrar error específico
+                console.error('Login error:', error);
+                this.state.errors.general = error.message || 'Credenciales inválidas. Verifica tu email y contraseña.';
                 this.updateForm();
             }
         }
     }
 
     updateForm() {
+        if (!this.container) return;
+        
+        // Limpiar todos los errores primero
+        const errorElements = this.container.querySelectorAll('.error-message');
+        errorElements.forEach(el => el.textContent = '');
+        
+        // Mostrar errores específicos
         Object.keys(this.state.errors).forEach(key => {
             const errorElement = this.container.querySelector(`.error-${key}`);
-            if (errorElement) {
-                errorElement.textContent = this.state.errors[key] || '';
+            if (errorElement && this.state.errors[key]) {
+                errorElement.textContent = this.state.errors[key];
             }
         });
-        // Mostrar error general si existe
-        const generalError = this.container.querySelector('.error-general');
-        if (generalError) {
-            generalError.textContent = this.state.errors.general || '';
-        }
     }
 
     render() {

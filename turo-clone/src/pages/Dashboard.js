@@ -1,15 +1,9 @@
-import '../css/Dashboard.css';
 import Header from '../components/common/Header.js';
-import '../css/ReservationCard.css';
-import '../css/UserProfile.css';
-import '../css/VehicleCard.css';
-
-
-
 import VehicleCard from '../components/dashboard/VehicleCard.js';
 import ReservationCard from '../components/dashboard/ReservationCard.js';
 import UserProfile from '../components/dashboard/UserProfile.js';
 import Notification from '../components/common/Notification.js';
+import { getUserData } from '../services/authService.js';
 
 export default class Dashboard {
     constructor() {
@@ -18,7 +12,7 @@ export default class Dashboard {
             activeTab: 'reservations',
             reservations: this.getSampleReservations(),
             vehicles: this.getSampleVehicles(),
-            user: this.getSampleUser()
+            user: this.getCurrentUser()
         };
     }
 
@@ -84,6 +78,36 @@ export default class Dashboard {
                 available: false
             }
         ];
+    }
+
+    getCurrentUser() {
+        // Obtener datos del usuario autenticado desde localStorage
+        const userData = getUserData();
+        
+        if (userData) {
+            return {
+                name: userData.fullName || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Usuario',
+                email: userData.email || '',
+                phone: userData.phone || '',
+                verified: userData.documents?.idDocument?.verified && userData.documents?.driverLicense?.verified || false,
+                documents: {
+                    id: userData.documents?.idDocument?.verified ? 'approved' : 'pending',
+                    license: userData.documents?.driverLicense?.verified ? 'approved' : 'pending'
+                }
+            };
+        }
+        
+        // Fallback si no hay datos (no debería pasar si está autenticado)
+        return {
+            name: 'Usuario',
+            email: '',
+            phone: '',
+            verified: false,
+            documents: {
+                id: 'pending',
+                license: 'pending'
+            }
+        };
     }
 
     getSampleUser() {
