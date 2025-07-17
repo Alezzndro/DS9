@@ -61,8 +61,8 @@ export async function verifyAuth() {
     if (!token) return false;
 
     try {
-        const response = await apiRequest('/auth/verify', 'GET');
-        return response.isValid;
+        const response = await apiRequest('/auth/verify-token', 'POST', { token }, false);
+        return response.valid;
     } catch (error) {
         return false;
     }
