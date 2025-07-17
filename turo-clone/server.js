@@ -5,8 +5,11 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
 import { connectDB } from './backend/config/database.js';
+import User from './backend/models/User.js';
 import authRoutes from './backend/routes/auth.js';
+import vehicleRoutes from './backend/routes/vehicles.js';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -42,8 +45,43 @@ const start = async () => {
         // Conectar a la base de datos
         await connectDB();
 
+        // Middleware para verificar autenticación
+        app.decorate('authenticate', async (request, reply) => {
+            try {
+                const authHeader = request.headers.authorization;
+                
+                if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                    return reply.code(401).send({
+                        success: false,
+                        message: 'Token de acceso requerido'
+                    });
+                }
+                
+                const token = authHeader.substring(7);
+                
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
+                
+                const user = await User.findById(decoded.userId);
+                if (!user) {
+                    return reply.code(401).send({
+                        success: false,
+                        message: 'Usuario no encontrado'
+                    });
+                }
+                
+                request.user = user;
+                
+            } catch (error) {
+                return reply.code(401).send({
+                    success: false,
+                    message: 'Token inválido'
+                });
+            }
+        });
+
         // Registrar rutas
         await app.register(authRoutes, { prefix: '/api/auth' });
+        await app.register(vehicleRoutes, { prefix: '/api/vehicles' });
 
         // Ruta principal
         app.get('/', async (request, reply) => {

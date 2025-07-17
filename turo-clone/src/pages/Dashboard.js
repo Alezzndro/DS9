@@ -3,7 +3,9 @@ import VehicleCard from '../components/dashboard/VehicleCard.js';
 import ReservationCard from '../components/dashboard/ReservationCard.js';
 import UserProfile from '../components/dashboard/UserProfile.js';
 import Notification from '../components/common/Notification.js';
+import VehicleForm from '../components/vehicle/VehicleFormNew.js';
 import { getUserData } from '../services/authService.js';
+import { getUserVehicles, deleteVehicle, toggleVehicleAvailability } from '../services/vehicleService.js';
 
 export default class Dashboard {
     constructor() {
@@ -11,9 +13,13 @@ export default class Dashboard {
         this.state = {
             activeTab: 'reservations',
             reservations: this.getSampleReservations(),
-            vehicles: this.getSampleVehicles(),
-            user: this.getCurrentUser()
+            vehicles: [],
+            user: this.getCurrentUser(),
+            isLoadingVehicles: false
         };
+        
+        // Cargar vehículos reales
+        this.loadUserVehicles();
     }
 
     getSampleReservations() {
@@ -80,6 +86,91 @@ export default class Dashboard {
         ];
     }
 
+    async loadUserVehicles() {
+        try {
+            this.state.isLoadingVehicles = true;
+            const vehicles = await getUserVehicles();
+            this.state.vehicles = vehicles || [];
+            
+            // Actualizar la vista si está en la pestaña de vehículos
+            if (this.state.activeTab === 'vehicles') {
+                this.refreshVehiclesTab();
+            }
+        } catch (error) {
+            console.error('Error cargando vehículos:', error);
+            Notification.show('Error al cargar los vehículos', 'error');
+        } finally {
+            this.state.isLoadingVehicles = false;
+        }
+    }
+
+    refreshVehiclesTab() {
+        const contentContainer = document.querySelector('.dashboard-content');
+        if (contentContainer && this.state.activeTab === 'vehicles') {
+            contentContainer.innerHTML = '';
+            contentContainer.appendChild(this.renderVehiclesTab());
+        }
+    }
+
+    handleAddVehicle() {
+        try {
+            const vehicleForm = new VehicleForm(null, (newVehicle) => {
+                // Actualizar la lista de vehículos
+                this.state.vehicles.push(newVehicle);
+                this.refreshVehiclesTab();
+            });
+            
+            document.body.appendChild(vehicleForm.render());
+        } catch (error) {
+            console.error('Error en handleAddVehicle:', error);
+            alert('Error: ' + error.message);
+        }
+    }
+
+    async handleEditVehicle(vehicle) {
+        const vehicleForm = new VehicleForm(vehicle, (updatedVehicle) => {
+            // Actualizar el vehículo en la lista
+            const index = this.state.vehicles.findIndex(v => v._id === updatedVehicle._id);
+            if (index !== -1) {
+                this.state.vehicles[index] = updatedVehicle;
+                this.refreshVehiclesTab();
+            }
+        });
+        
+        document.body.appendChild(vehicleForm.render());
+    }
+
+    async handleDeleteVehicle(vehicleId) {
+        if (!confirm('¿Estás seguro de que quieres eliminar este vehículo?')) {
+            return;
+        }
+        
+        try {
+            await deleteVehicle(vehicleId);
+            this.state.vehicles = this.state.vehicles.filter(v => v._id !== vehicleId);
+            this.refreshVehiclesTab();
+            Notification.show('Vehículo eliminado exitosamente', 'success');
+        } catch (error) {
+            console.error('Error eliminando vehículo:', error);
+            Notification.show('Error al eliminar el vehículo', 'error');
+        }
+    }
+
+    async handleToggleAvailability(vehicleId, isAvailable) {
+        try {
+            const updatedVehicle = await toggleVehicleAvailability(vehicleId, isAvailable);
+            const index = this.state.vehicles.findIndex(v => v._id === vehicleId);
+            if (index !== -1) {
+                this.state.vehicles[index] = updatedVehicle;
+                this.refreshVehiclesTab();
+            }
+            Notification.show(`Vehículo ${isAvailable ? 'habilitado' : 'deshabilitado'} exitosamente`, 'success');
+        } catch (error) {
+            console.error('Error cambiando disponibilidad:', error);
+            Notification.show('Error al cambiar la disponibilidad', 'error');
+        }
+    }
+
     getCurrentUser() {
         // Obtener datos del usuario autenticado desde localStorage
         const userData = getUserData();
@@ -134,12 +225,6 @@ export default class Dashboard {
     this.contentContainer.innerHTML = '';
     this.contentContainer.appendChild(this.renderContent());
 }
-
-
-    handleAddVehicle() {
-        console.log('Añadir nuevo vehículo');
-        // Aquí iría la navegación al formulario de vehículo
-    }
 
     renderTabs() {
         const tabs = document.createElement('div');
@@ -218,23 +303,47 @@ export default class Dashboard {
         `;
         container.appendChild(header);
         
-        header.querySelector('.add-vehicle-btn').addEventListener('click', () => 
-            this.handleAddVehicle());
+        const addBtn = header.querySelector('.add-vehicle-btn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                this.handleAddVehicle();
+            });
+        }
         
-        if (this.state.vehicles.length === 0) {
-            container.innerHTML += `
-                <div class="empty-state">
-                    <p>No tienes vehículos registrados</p>
-                    <button class="btn btn-primary add-vehicle-btn">Añadir vehículo</button>
-                </div>
-            `;
-            container.querySelector('.add-vehicle-btn').addEventListener('click', () => 
-                this.handleAddVehicle());
+        if (this.state.isLoadingVehicles) {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-state';
+            loadingDiv.innerHTML = `<p>Cargando vehículos...</p>`;
+            container.appendChild(loadingDiv);
             return container;
         }
         
+        if (this.state.vehicles.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.innerHTML = `
+                <p>No tienes vehículos registrados</p>
+                <button class="btn btn-primary add-vehicle-btn">Añadir vehículo</button>
+            `;
+            
+            const emptyBtn = emptyDiv.querySelector('.add-vehicle-btn');
+            if (emptyBtn) {
+                emptyBtn.addEventListener('click', () => {
+                    this.handleAddVehicle();
+                });
+            }
+            
+            container.appendChild(emptyDiv);
+            return container;
+        }
+        
+        // Renderizar vehículos con callbacks
         this.state.vehicles.forEach(vehicle => {
-            const vehicleCard = new VehicleCard(vehicle, true);
+            const vehicleCard = new VehicleCard(vehicle, true, {
+                onEdit: (vehicle) => this.handleEditVehicle(vehicle),
+                onDelete: (vehicleId) => this.handleDeleteVehicle(vehicleId),
+                onToggleAvailability: (vehicleId, isAvailable) => this.handleToggleAvailability(vehicleId, isAvailable)
+            });
             container.appendChild(vehicleCard.render());
         });
         

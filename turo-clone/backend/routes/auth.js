@@ -169,40 +169,6 @@ export default async function authRoutes(fastify, options) {
         }
     });
     
-    // Middleware para verificar autenticación
-    fastify.decorate('authenticate', async (request, reply) => {
-        try {
-            const authHeader = request.headers.authorization;
-            
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                return reply.code(401).send({
-                    success: false,
-                    message: 'Token de acceso requerido'
-                });
-            }
-            
-            const token = authHeader.substring(7);
-            
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
-            
-            const user = await User.findById(decoded.userId);
-            if (!user) {
-                return reply.code(401).send({
-                    success: false,
-                    message: 'Usuario no encontrado'
-                });
-            }
-            
-            request.user = user;
-            
-        } catch (error) {
-            return reply.code(401).send({
-                success: false,
-                message: 'Token inválido'
-            });
-        }
-    });
-    
     // Obtener perfil del usuario autenticado
     fastify.get('/profile', { preHandler: fastify.authenticate }, async (request, reply) => {
         try {

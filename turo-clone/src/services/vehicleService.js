@@ -64,8 +64,18 @@ export async function uploadVehicleImage(vehicleId, file) {
 
 export async function getUserVehicles() {
     try {
-        const response = await apiRequest('/users/vehicles');
-        return response;
+        const response = await apiRequest('/vehicles/my-vehicles');
+        return response.vehicles;
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Cambiar disponibilidad de vehículo
+export async function toggleVehicleAvailability(vehicleId, isAvailable) {
+    try {
+        const response = await apiRequest(`/vehicles/${vehicleId}/availability`, 'PATCH', { isAvailable });
+        return response.vehicle;
     } catch (error) {
         throw error;
     }
