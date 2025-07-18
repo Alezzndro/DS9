@@ -5,10 +5,13 @@ import Admin from './pages/Admin.js';
 import NotFound from './pages/NotFound.js';
 
 import Login from './components/auth/Login.js';
-import Register from './components/auth/Register.js'; // Asegúrate de que exista
+import Register from './components/auth/Register.js';
 
 import { navigateTo } from './utils/helpers.js';
 import { verifyAuth, getUserData } from './services/authService.js';
+
+import PaymentSuccess from './components/payment/PaymentSuccess.js';
+import PaymentCancel from './components/payment/PaymentCancel.js';
 
 export default class App {
     constructor() {
@@ -19,6 +22,8 @@ export default class App {
             '/search': Search,
             '/dashboard': Dashboard,
             '/admin': Admin,
+            '/success': PaymentSuccess,  // Ruta para mostrar mensaje de pago exitoso
+            '/cancel': PaymentCancel,    // Ruta para mostrar mensaje de pago cancelado
             '/404': NotFound
         };
     }
@@ -70,7 +75,7 @@ export default class App {
                         navigateTo('/dashboard');
                         return;
                     }
-                    
+
                     // Si está autenticado y trata de ir a login/register, enviarlo al dashboard
                     if (currentPath === '/login' || currentPath === '/register') {
                         navigateTo('/dashboard');
@@ -102,8 +107,10 @@ export default class App {
     }
 
     setupNavigation() {
+        // Soporta navegación con botones del navegador (adelante/atrás)
         window.addEventListener('popstate', () => this.renderPage());
 
+        // Manejar clics en elementos con data-link para navegación SPA
         document.addEventListener('click', (e) => {
             const target = e.target.closest('[data-link]');
             if (target) {
