@@ -20,6 +20,7 @@
     "dotenv": "^16.4.5",
     "fastify": "^4.26.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.4"
+    "mongoose": "^8.0.4",
+    "stripe": "^18.3.0"
   }
 }

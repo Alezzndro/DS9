@@ -25,8 +25,8 @@ export default async function paymentRoutes(fastify, opts) {
           },
         ],
         mode: 'payment',
-        success_url: 'http://localhost:3000/success', // 🔁 corregido a puerto del frontend
-        cancel_url: 'http://localhost:3000/cancel',
+        success_url: 'http://localhost:5000/success', // 🔁 corregido a puerto del frontend
+        cancel_url: 'http://localhost:5000/cancel',
       });
 
       reply.send({ url: session.url });

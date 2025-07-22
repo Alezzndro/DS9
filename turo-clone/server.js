@@ -10,6 +10,8 @@ import { connectDB } from './backend/config/database.js';
 import User from './backend/models/User.js';
 import authRoutes from './backend/routes/auth.js';
 import vehicleRoutes from './backend/routes/vehicles.js';
+import paymentRoutes from './backend/routes/payment.js';
+
 
 // Cargar variables de entorno
 dotenv.config();
@@ -82,6 +84,7 @@ const start = async () => {
         // Registrar rutas
         await app.register(authRoutes, { prefix: '/api/auth' });
         await app.register(vehicleRoutes, { prefix: '/api/vehicles' });
+        await app.register(paymentRoutes);
 
         // Ruta principal
         app.get('/', async (request, reply) => {
