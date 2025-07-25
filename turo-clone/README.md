@@ -13,18 +13,41 @@ Copia el archivo `.env.example` a `.env` y ajusta las variables según tu entorn
 cp .env.example .env
 ```
 
-### 3. Configurar MongoDB
-Asegúrate de tener MongoDB instalado y corriendo en tu sistema:
+### 3. Configurar MongoDB con MongoDB Compass
 
-#### Opción A: MongoDB Local
+#### 📥 Instalar MongoDB Compass
+1. Descarga MongoDB Compass desde: https://www.mongodb.com/try/download/compass
+2. Instala la aplicación siguiendo las instrucciones de tu sistema operativo
+
+#### 🔧 Configurar la Conexión
+1. Abre MongoDB Compass
+2. En la pantalla de conexión, usa: `mongodb://localhost:27017`
+3. Haz clic en "Connect"
+4. Una vez conectado, crea una nueva base de datos:
+   - Nombre de la base de datos: `turo-clone`
+   - Nombre de la colección inicial: `users`
+
+#### ⚡ Iniciar MongoDB (si no está ejecutándose)
+**Windows:**
 ```bash
-# Iniciar MongoDB
-mongod
+# Si instalaste MongoDB Community Server
+net start MongoDB
 ```
 
-#### Opción B: MongoDB Atlas (Nube)
+**macOS (con Homebrew):**
+```bash
+brew services start mongodb-community
+```
+
+**Linux:**
+```bash
+sudo systemctl start mongod
+```
+
+#### 🔄 Alternativa: MongoDB Atlas (Nube)
+Si prefieres no instalar MongoDB localmente:
 1. Crea una cuenta en MongoDB Atlas
-2. Crea un cluster
+2. Crea un cluster gratuito
 3. Obtén la cadena de conexión
 4. Actualiza `MONGODB_URI` en tu archivo `.env`
 

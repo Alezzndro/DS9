@@ -64,10 +64,42 @@
     color: #f9a825;
 }
 
-.reservation-dates, .reservation-total {
+.badge-confirmed {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.reservation-dates, .reservation-total, .reservation-location, .reservation-role, .reservation-codes, .reservation-notes {
     margin-top: 0.75rem;
     font-size: 0.95rem;
     color: #555;
+}
+
+.reservation-codes {
+    background-color: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border-left: 3px solid #4f46e5;
+}
+
+.reservation-role {
+    background-color: #fff8e1;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border-left: 3px solid #f9a825;
+}
+
+.reservation-notes {
+    background-color: #f0f9ff;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border-left: 3px solid #0ea5e9;
+}
+
+.loading-state, .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
 }
 
 .reservation-actions {

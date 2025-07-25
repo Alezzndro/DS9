@@ -266,10 +266,12 @@ export default async function vehicleRoutes(fastify, options) {
                 page = 1
             } = request.query;
             
-            // Construir filtros
+            console.log('🔍 Búsqueda de vehículos con parámetros:', request.query);
+            
+            // Construir filtros - Solo filtrar por disponibilidad por ahora
             const filters = {
-                isAvailable: true,
-                isVerified: true
+                isAvailable: true
+                // Removemos temporalmente isVerified: true para ver todos los vehículos
             };
             
             if (city) filters['location.city'] = new RegExp(city, 'i');
@@ -290,6 +292,8 @@ export default async function vehicleRoutes(fastify, options) {
                 filters.features = { $in: featuresArray };
             }
             
+            console.log('📊 Filtros aplicados:', filters);
+            
             const skip = (parseInt(page) - 1) * parseInt(limit);
             
             const vehicles = await Vehicle.find(filters)
@@ -299,6 +303,8 @@ export default async function vehicleRoutes(fastify, options) {
                 .skip(skip);
             
             const totalCount = await Vehicle.countDocuments(filters);
+            
+            console.log(`✅ Encontrados ${vehicles.length} vehículos de ${totalCount} total`);
             
             reply.send({
                 success: true,
@@ -313,6 +319,33 @@ export default async function vehicleRoutes(fastify, options) {
             
         } catch (error) {
             console.error('Error en búsqueda de vehículos:', error);
+            reply.code(500).send({
+                success: false,
+                message: 'Error interno del servidor'
+            });
+        }
+    });
+
+    // Ruta de debug para ver todos los vehículos (temporal)
+    fastify.get('/debug/all', async (request, reply) => {
+        try {
+            const allVehicles = await Vehicle.find({})
+                .populate('owner', 'firstName lastName email')
+                .sort({ createdAt: -1 });
+            
+            console.log(`📊 Total de vehículos en BD: ${allVehicles.length}`);
+            allVehicles.forEach((v, i) => {
+                console.log(`${i + 1}. ${v.make} ${v.model} - Disponible: ${v.isAvailable}, Verificado: ${v.isVerified}`);
+            });
+            
+            reply.send({
+                success: true,
+                totalVehicles: allVehicles.length,
+                vehicles: allVehicles
+            });
+            
+        } catch (error) {
+            console.error('Error obteniendo todos los vehículos:', error);
             reply.code(500).send({
                 success: false,
                 message: 'Error interno del servidor'

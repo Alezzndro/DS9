@@ -11,6 +11,7 @@ import User from './backend/models/User.js';
 import authRoutes from './backend/routes/auth.js';
 import vehicleRoutes from './backend/routes/vehicles.js';
 import paymentRoutes from './backend/routes/payment.js';
+import reservationRoutes from './backend/routes/reservations.js';
 
 
 // Cargar variables de entorno
@@ -85,6 +86,7 @@ const start = async () => {
         await app.register(authRoutes, { prefix: '/api/auth' });
         await app.register(vehicleRoutes, { prefix: '/api/vehicles' });
         await app.register(paymentRoutes);
+        await app.register(reservationRoutes);
 
         // Ruta principal
         app.get('/', async (request, reply) => {

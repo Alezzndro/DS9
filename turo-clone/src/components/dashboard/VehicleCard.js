@@ -6,7 +6,7 @@ import Modal from '../common/Modal.js';
 
 
 export default class VehicleCard {
-    constructor(vehicle, isOwner = false) {
+    constructor(vehicle, isOwner = false, callbacks = {}) {
         this.vehicle = vehicle || {
             id: '1',
             make: 'Toyota',
@@ -21,11 +21,13 @@ export default class VehicleCard {
             available: true
         };
         this.isOwner = isOwner;
+        this.callbacks = callbacks; // Almacenar los callbacks
     }
 
     renderRatingStars() {
-        const fullStars = Math.floor(this.vehicle.rating);
-        const hasHalfStar = this.vehicle.rating % 1 >= 0.5;
+        const rating = this.vehicle.rating || 0;
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
         let stars = '';
         
         for (let i = 0; i < 5; i++) {
@@ -38,7 +40,8 @@ export default class VehicleCard {
             }
         }
         
-        return `<div class="vehicle-rating">${stars} (${this.vehicle.rating})</div>`;
+        const ratingText = rating > 0 ? `(${rating})` : '(Sin calificaciones)';
+        return `<div class="vehicle-rating">${stars} ${ratingText}</div>`;
     }
 
     renderAvailabilityBadge() {
@@ -50,16 +53,26 @@ export default class VehicleCard {
     renderOwnerActions() {
         if (!this.isOwner) return '';
         
+        const isAvailable = this.vehicle.isAvailable !== undefined ? this.vehicle.isAvailable : this.vehicle.available;
+        const availabilityBtnText = isAvailable ? 'Deshabilitar' : 'Habilitar';
+        const availabilityBtnClass = isAvailable ? 'btn-warning' : 'btn-success';
+        
         return `
             <div class="vehicle-actions">
                 <button class="btn btn-outline edit-btn">Editar</button>
+                <button class="btn ${availabilityBtnClass} availability-btn">${availabilityBtnText}</button>
                 <button class="btn btn-danger delete-btn">Eliminar</button>
             </div>
         `;
     }
 
     renderRenterActions() {
-        if (this.isOwner || !this.vehicle.available) return '';
+        if (this.isOwner) return '';
+        
+        // Manejar disponibilidad correctamente
+        const isAvailable = this.vehicle.isAvailable !== undefined ? this.vehicle.isAvailable : this.vehicle.available;
+        
+        if (!isAvailable) return '';
         
         return `
             <div class="vehicle-actions">
@@ -72,16 +85,30 @@ export default class VehicleCard {
     render() {
         const card = document.createElement('div');
         card.className = 'vehicle-card';
+        
+        // Manejar ubicación que puede ser un objeto o string
+        let locationText = 'Sin ubicación';
+        if (this.vehicle.location) {
+            if (typeof this.vehicle.location === 'object') {
+                locationText = `${this.vehicle.location.city || ''}, ${this.vehicle.location.state || ''}`.replace(/, $/, '');
+            } else {
+                locationText = this.vehicle.location;
+            }
+        }
+        
+        // Manejar disponibilidad
+        const isAvailable = this.vehicle.isAvailable !== undefined ? this.vehicle.isAvailable : this.vehicle.available;
+        
         card.innerHTML = `
             <div class="vehicle-image">
-                <img src="${this.vehicle.image}" alt="${this.vehicle.make} ${this.vehicle.model}">
-                ${this.renderAvailabilityBadge()}
+                <img src="${this.vehicle.image || this.vehicle.images?.[0] || 'https://via.placeholder.com/300'}" alt="${this.vehicle.make} ${this.vehicle.model}">
+                ${isAvailable ? '<span class="badge available">Disponible</span>' : '<span class="badge unavailable">No disponible</span>'}
             </div>
             <div class="vehicle-info">
                 <h3>${this.vehicle.make} ${this.vehicle.model} (${this.vehicle.year})</h3>
-                <p><strong>Ubicación:</strong> ${this.vehicle.location}</p>
+                <p><strong>Ubicación:</strong> ${locationText}</p>
                 <p><strong>Asientos:</strong> ${this.vehicle.seats}</p>
-                <p><strong>Precio por día:</strong> ${formatCurrency(this.vehicle.pricePerDay)}</p>
+                <p><strong>Precio por día:</strong> ${formatCurrency(this.vehicle.pricePerDay)} €</p>
                 ${this.renderRatingStars()}
             </div>
             ${this.renderOwnerActions()}
@@ -90,26 +117,63 @@ export default class VehicleCard {
         
         // Event listeners
         if (this.isOwner) {
-            card.querySelector('.edit-btn').addEventListener('click', () => this.handleEdit());
-            card.querySelector('.delete-btn').addEventListener('click', () => this.handleDelete());
-        } else if (this.vehicle.available) {
-            card.querySelector('.rent-btn').addEventListener('click', () => this.handleRent());
-            card.querySelector('.details-btn').addEventListener('click', () => this.handleDetails());
+            const editBtn = card.querySelector('.edit-btn');
+            const deleteBtn = card.querySelector('.delete-btn');
+            const availabilityBtn = card.querySelector('.availability-btn');
+            
+            if (editBtn) {
+                editBtn.addEventListener('click', () => this.handleEdit());
+            }
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', () => this.handleDelete());
+            }
+            if (availabilityBtn) {
+                availabilityBtn.addEventListener('click', () => this.handleToggleAvailability());
+            }
+        } else if (isAvailable) {
+            const rentBtn = card.querySelector('.rent-btn');
+            const detailsBtn = card.querySelector('.details-btn');
+            
+            if (rentBtn) {
+                rentBtn.addEventListener('click', () => this.handleRent());
+            }
+            if (detailsBtn) {
+                detailsBtn.addEventListener('click', () => this.handleDetails());
+            }
         }
         
         return card;
     }
 
     handleEdit() {
-        console.log('Editar vehículo', this.vehicle.id);
+        console.log('Editar vehículo', this.vehicle._id || this.vehicle.id);
+        if (this.callbacks.onEdit) {
+            this.callbacks.onEdit(this.vehicle);
+        }
     }
 
     handleDelete() {
-        console.log('Eliminar vehículo', this.vehicle.id);
+        console.log('Eliminar vehículo', this.vehicle._id || this.vehicle.id);
+        if (this.callbacks.onDelete) {
+            this.callbacks.onDelete(this.vehicle._id || this.vehicle.id);
+        }
+    }
+
+    handleToggleAvailability() {
+        const currentAvailability = this.vehicle.isAvailable !== undefined ? this.vehicle.isAvailable : this.vehicle.available;
+        const newAvailability = !currentAvailability;
+        
+        console.log('Cambiar disponibilidad:', currentAvailability, '->', newAvailability);
+        
+        if (this.callbacks.onToggleAvailability) {
+            this.callbacks.onToggleAvailability(this.vehicle._id || this.vehicle.id, newAvailability);
+        }
     }
 
     handleRent() {
-        console.log('Reservar vehículo', this.vehicle.id);
+        console.log('Reservar vehículo', this.vehicle._id || this.vehicle.id);
+        // Por ahora abre los detalles donde se puede hacer la reserva
+        this.handleDetails();
     }
 
     handleDetails() {

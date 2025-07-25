@@ -13,23 +13,39 @@ export default class Search {
     }
 
     setupEventListeners() {
-        document.addEventListener('filtersChanged', (e) => {
+        document.addEventListener('filtersChanged', async (e) => {
             this.state.filters = e.detail;
-            this.updateVehicleList();
+            await this.updateVehicleList();
         });
     }
 
-    updateVehicleList() {
-        const filteredVehicles = this.vehicleList.filterVehicles(this.state.filters);
+    async updateVehicleList() {
+        // Mostrar estado de carga
+        const listContainer = document.querySelector('.vehicle-list-container');
+        if (listContainer) {
+            listContainer.innerHTML = `
+                <div class="loading-state">
+                    <h3>🔄 Aplicando filtros...</h3>
+                    <p>Buscando vehículos disponibles</p>
+                </div>
+            `;
+        }
+        
+        // Aplicar filtros y obtener vehículos
+        const filteredVehicles = await this.vehicleList.filterVehicles(this.state.filters);
         const newList = this.vehicleList.render(filteredVehicles);
         
-        const oldList = document.querySelector('.vehicle-list-container');
-        if (oldList) {
-            oldList.replaceWith(newList);
+        const oldListContainer = document.querySelector('.vehicle-list-container');
+        if (oldListContainer) {
+            oldListContainer.innerHTML = '';
+            oldListContainer.appendChild(newList);
         } else {
             const container = document.querySelector('.search-container');
             if (container) {
-                container.appendChild(newList);
+                const newContainer = document.createElement('div');
+                newContainer.className = 'vehicle-list-container';
+                newContainer.appendChild(newList);
+                container.appendChild(newContainer);
             }
         }
     }
@@ -51,14 +67,41 @@ export default class Search {
         
         const listContainer = document.createElement('div');
         listContainer.className = 'vehicle-list-container';
-        listContainer.appendChild(this.vehicleList.render());
-        container.appendChild(listContainer);
         
+        // Mostrar estado de carga inicial
+        listContainer.innerHTML = `
+            <div class="loading-state">
+                <h3>🔄 Cargando vehículos...</h3>
+                <p>Obteniendo vehículos disponibles</p>
+            </div>
+        `;
+        
+        container.appendChild(listContainer);
         page.appendChild(container);
         
         this.setupEventListeners();
         
+        // Cargar vehículos después de renderizar (asíncrono)
+        this.loadInitialVehicles(listContainer);
+        
         return page;
+    }
+
+    async loadInitialVehicles(listContainer) {
+        try {
+            await this.vehicleList.loadVehicles();
+            const newList = this.vehicleList.render();
+            listContainer.innerHTML = '';
+            listContainer.appendChild(newList);
+        } catch (error) {
+            console.error('Error cargando vehículos iniciales:', error);
+            listContainer.innerHTML = `
+                <div class="no-results">
+                    <h3>Error al cargar vehículos</h3>
+                    <p>No se pudieron cargar los vehículos. Intenta recargar la página.</p>
+                </div>
+            `;
+        }
     }
 
     

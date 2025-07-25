@@ -6,55 +6,23 @@ import Notification from '../components/common/Notification.js';
 import VehicleForm from '../components/vehicle/VehicleFormNew.js';
 import { getUserData } from '../services/authService.js';
 import { getUserVehicles, deleteVehicle, toggleVehicleAvailability } from '../services/vehicleService.js';
+import { getReservations } from '../services/reservationService.js';
 
 export default class Dashboard {
     constructor() {
         this.header = new Header();
         this.state = {
             activeTab: 'reservations',
-            reservations: this.getSampleReservations(),
+            reservations: [],
             vehicles: [],
             user: this.getCurrentUser(),
-            isLoadingVehicles: false
+            isLoadingVehicles: false,
+            isLoadingReservations: false
         };
         
-        // Cargar vehículos reales
+        // Cargar datos reales
         this.loadUserVehicles();
-    }
-
-    getSampleReservations() {
-        return [
-            {
-                id: '1',
-                vehicle: {
-                    make: 'Toyota',
-                    model: 'Corolla',
-                    year: '2020',
-                    image: 'https://via.placeholder.com/300'
-                },
-                dates: {
-                    start: '2023-06-15',
-                    end: '2023-06-20'
-                },
-                total: 250,
-                status: 'active'
-            },
-            {
-                id: '2',
-                vehicle: {
-                    make: 'Honda',
-                    model: 'Civic',
-                    year: '2019',
-                    image: 'https://via.placeholder.com/300'
-                },
-                dates: {
-                    start: '2023-05-10',
-                    end: '2023-05-12'
-                },
-                total: 135,
-                status: 'completed'
-            }
-        ];
+        this.loadUserReservations();
     }
 
     getSampleVehicles() {
@@ -104,11 +72,39 @@ export default class Dashboard {
         }
     }
 
+    async loadUserReservations() {
+        try {
+            this.state.isLoadingReservations = true;
+            const reservations = await getReservations();
+            this.state.reservations = reservations || [];
+            
+            // Actualizar la vista si está en la pestaña de reservas
+            if (this.state.activeTab === 'reservations') {
+                this.refreshReservationsTab();
+            }
+        } catch (error) {
+            console.error('Error cargando reservas:', error);
+            Notification.show('Error al cargar las reservas', 'error');
+            // En caso de error, mantener array vacío
+            this.state.reservations = [];
+        } finally {
+            this.state.isLoadingReservations = false;
+        }
+    }
+
     refreshVehiclesTab() {
         const contentContainer = document.querySelector('.dashboard-content');
         if (contentContainer && this.state.activeTab === 'vehicles') {
             contentContainer.innerHTML = '';
             contentContainer.appendChild(this.renderVehiclesTab());
+        }
+    }
+
+    refreshReservationsTab() {
+        const contentContainer = document.querySelector('.dashboard-content');
+        if (contentContainer && this.state.activeTab === 'reservations') {
+            contentContainer.innerHTML = '';
+            contentContainer.appendChild(this.renderReservationsTab());
         }
     }
 
@@ -253,18 +249,33 @@ export default class Dashboard {
         const container = document.createElement('div');
         container.className = 'reservations-container';
         
+        // Mostrar estado de carga
+        if (this.state.isLoadingReservations) {
+            container.innerHTML = `
+                <div class="loading-state">
+                    <p>Cargando reservas...</p>
+                </div>
+            `;
+            return container;
+        }
+        
         if (this.state.reservations.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <p>No tienes reservas activas</p>
+                    <p>No tienes reservas</p>
                     <a href="/search" class="btn btn-primary" data-link>Buscar vehículos</a>
                 </div>
             `;
             return container;
         }
         
-        const activeReservations = this.state.reservations.filter(r => r.status === 'active');
-        const pastReservations = this.state.reservations.filter(r => r.status !== 'active');
+        // Categorizar reservas
+        const activeReservations = this.state.reservations.filter(r => 
+            ['pending', 'confirmed', 'active'].includes(r.status)
+        );
+        const pastReservations = this.state.reservations.filter(r => 
+            ['completed', 'cancelled'].includes(r.status)
+        );
         
         if (activeReservations.length > 0) {
             const activeHeader = document.createElement('h3');
@@ -272,18 +283,24 @@ export default class Dashboard {
             container.appendChild(activeHeader);
             
             activeReservations.forEach(reservation => {
-                const reservationCard = new ReservationCard(reservation);
+                const reservationCard = new ReservationCard(reservation, () => {
+                    // Callback para actualizar la lista cuando se modifica una reserva
+                    this.loadUserReservations();
+                });
                 container.appendChild(reservationCard.render());
             });
         }
         
         if (pastReservations.length > 0) {
             const pastHeader = document.createElement('h3');
-            pastHeader.textContent = 'Reservas anteriores';
+            pastHeader.textContent = 'Historial de reservas';
             container.appendChild(pastHeader);
             
             pastReservations.forEach(reservation => {
-                const reservationCard = new ReservationCard(reservation);
+                const reservationCard = new ReservationCard(reservation, () => {
+                    // Callback para actualizar la lista cuando se modifica una reserva
+                    this.loadUserReservations();
+                });
                 container.appendChild(reservationCard.render());
             });
         }

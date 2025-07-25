@@ -1,45 +1,90 @@
 import { formatDate, formatCurrency } from '../../utils/helpers.js';
+import { cancelReservation } from '../../services/reservationService.js';
+import Notification from '../common/Notification.js';
 
 export default class ReservationCard {
-    constructor(reservation) {
-        this.reservation = reservation || {
-            id: '1',
-            vehicle: {
-                make: 'Toyota',
-                model: 'Corolla',
-                year: '2020',
-                image: 'https://via.placeholder.com/300'
-            },
-            dates: {
-                start: '2023-06-15',
-                end: '2023-06-20'
-            },
-            total: 250,
-            status: 'active'
-        };
+    constructor(reservation, onUpdate = null) {
+        this.reservation = reservation;
+        this.onUpdate = onUpdate; // Callback para actualizar la lista cuando se modifica una reserva
+    }
+
+    getVehicleImage() {
+        // Si hay fotos, usar la primera, sino usar placeholder
+        if (this.reservation.vehicle.photos && this.reservation.vehicle.photos.length > 0) {
+            return this.reservation.vehicle.photos[0];
+        }
+        return 'https://via.placeholder.com/300x200?text=Sin+Imagen';
     }
 
     renderStatusBadge() {
         const status = this.reservation.status;
         const statusMap = {
+            pending: { class: 'badge-pending', text: 'Pendiente' },
+            confirmed: { class: 'badge-confirmed', text: 'Confirmada' },
             active: { class: 'badge-active', text: 'Activa' },
             completed: { class: 'badge-completed', text: 'Completada' },
-            cancelled: { class: 'badge-cancelled', text: 'Cancelada' },
-            pending: { class: 'badge-pending', text: 'Pendiente' }
+            cancelled: { class: 'badge-cancelled', text: 'Cancelada' }
         };
         
-        return `<span class="badge ${statusMap[status].class}">${statusMap[status].text}</span>`;
+        const statusInfo = statusMap[status] || { class: 'badge-pending', text: status };
+        return `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>`;
+    }
+
+    renderUserRole() {
+        // Determinar si el usuario actual es el huésped o el anfitrión
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const isGuest = this.reservation.guest._id === currentUser._id;
+        const role = isGuest ? 'Huésped' : 'Anfitrión';
+        const otherUser = isGuest ? this.reservation.host : this.reservation.guest;
+        
+        return `
+            <div class="reservation-role">
+                <p><strong>Tu rol:</strong> ${role}</p>
+                <p><strong>${isGuest ? 'Anfitrión' : 'Huésped'}:</strong> ${otherUser.name}</p>
+            </div>
+        `;
+    }
+
+    renderPickupCodes() {
+        if (this.reservation.status === 'confirmed' || this.reservation.status === 'active') {
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const isGuest = this.reservation.guest._id === currentUser._id;
+            
+            return `
+                <div class="reservation-codes">
+                    ${isGuest ? `<p><strong>Código de recogida:</strong> ${this.reservation.pickupCode}</p>` : ''}
+                    ${this.reservation.status === 'active' && isGuest ? `<p><strong>Código de devolución:</strong> ${this.reservation.returnCode}</p>` : ''}
+                </div>
+            `;
+        }
+        return '';
     }
 
     renderActions() {
-        if (this.reservation.status === 'active') {
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const isGuest = this.reservation.guest._id === currentUser._id;
+        const status = this.reservation.status;
+
+        if (status === 'pending' && isGuest) {
             return `
-                <button class="btn btn-outline cancel-btn">Cancelar</button>
-                <button class="btn btn-primary contact-btn">Contactar</button>
+                <button class="btn btn-outline cancel-btn" data-reservation-id="${this.reservation._id}">Cancelar</button>
             `;
-        } else if (this.reservation.status === 'completed') {
+        } else if (status === 'confirmed' && isGuest) {
             return `
-                <button class="btn btn-outline review-btn">Dejar reseña</button>
+                <button class="btn btn-outline cancel-btn" data-reservation-id="${this.reservation._id}">Cancelar</button>
+                <button class="btn btn-primary start-btn" data-reservation-id="${this.reservation._id}">Iniciar reserva</button>
+            `;
+        } else if (status === 'confirmed' && !isGuest) {
+            return `
+                <button class="btn btn-primary confirm-btn" data-reservation-id="${this.reservation._id}">Confirmar reserva</button>
+            `;
+        } else if (status === 'active' && isGuest) {
+            return `
+                <button class="btn btn-primary complete-btn" data-reservation-id="${this.reservation._id}">Completar reserva</button>
+            `;
+        } else if (status === 'completed') {
+            return `
+                <button class="btn btn-outline review-btn" data-reservation-id="${this.reservation._id}">Dejar reseña</button>
             `;
         }
         return '';
@@ -50,18 +95,24 @@ export default class ReservationCard {
         card.className = 'reservation-card';
         card.innerHTML = `
             <div class="reservation-image">
-                <img src="${this.reservation.vehicle.image}" alt="${this.reservation.vehicle.make} ${this.reservation.vehicle.model}">
+                <img src="${this.getVehicleImage()}" alt="${this.reservation.vehicle.make} ${this.reservation.vehicle.model}">
             </div>
             <div class="reservation-details">
-                <h3>${this.reservation.vehicle.make} ${this.reservation.vehicle.model} (${this.reservation.vehicle.year})</h3>
+                <h3>${this.reservation.vehicle.make} ${this.reservation.vehicle.model} ${this.reservation.vehicle.year}</h3>
                 ${this.renderStatusBadge()}
+                ${this.renderUserRole()}
                 <div class="reservation-dates">
-                    <p><strong>Desde:</strong> ${formatDate(this.reservation.dates.start)}</p>
-                    <p><strong>Hasta:</strong> ${formatDate(this.reservation.dates.end)}</p>
+                    <p><strong>Desde:</strong> ${formatDate(this.reservation.startDate)}</p>
+                    <p><strong>Hasta:</strong> ${formatDate(this.reservation.endDate)}</p>
                 </div>
+                <div class="reservation-location">
+                    <p><strong>Ubicación:</strong> ${this.reservation.vehicle.location}</p>
+                </div>
+                ${this.renderPickupCodes()}
                 <div class="reservation-total">
-                    <p><strong>Total:</strong> ${formatCurrency(this.reservation.total)}</p>
+                    <p><strong>Total:</strong> ${formatCurrency(this.reservation.totalPrice)}</p>
                 </div>
+                ${this.reservation.notes ? `<div class="reservation-notes"><p><strong>Notas:</strong> ${this.reservation.notes}</p></div>` : ''}
                 <div class="reservation-actions">
                     ${this.renderActions()}
                 </div>
@@ -69,6 +120,12 @@ export default class ReservationCard {
         `;
         
         // Agregar event listeners para los botones de acción
+        this.attachEventListeners(card);
+        
+        return card;
+    }
+
+    attachEventListeners(card) {
         const cancelBtn = card.querySelector('.cancel-btn');
         if (cancelBtn) {
             cancelBtn.addEventListener('click', () => this.handleCancel());
@@ -78,17 +135,65 @@ export default class ReservationCard {
         if (reviewBtn) {
             reviewBtn.addEventListener('click', () => this.handleReview());
         }
-        
-        return card;
+
+        const startBtn = card.querySelector('.start-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => this.handleStart());
+        }
+
+        const completeBtn = card.querySelector('.complete-btn');
+        if (completeBtn) {
+            completeBtn.addEventListener('click', () => this.handleComplete());
+        }
+
+        const confirmBtn = card.querySelector('.confirm-btn');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', () => this.handleConfirm());
+        }
     }
 
-    handleCancel() {
-        // Lógica para cancelar reserva
-        console.log('Cancelar reserva', this.reservation.id);
+    async handleCancel() {
+        if (confirm('¿Estás seguro de que quieres cancelar esta reserva?')) {
+            try {
+                await cancelReservation(this.reservation._id);
+                Notification.show('Reserva cancelada exitosamente', 'success');
+                if (this.onUpdate) {
+                    this.onUpdate();
+                }
+            } catch (error) {
+                console.error('Error al cancelar reserva:', error);
+                Notification.show('Error al cancelar la reserva', 'error');
+            }
+        }
     }
 
     handleReview() {
-        // Lógica para dejar reseña
-        console.log('Dejar reseña para reserva', this.reservation.id);
+        // TODO: Implementar modal de reseñas
+        console.log('Dejar reseña para reserva', this.reservation._id);
+        Notification.show('Función de reseñas en desarrollo', 'info');
+    }
+
+    handleStart() {
+        // TODO: Implementar inicio de reserva con código
+        const code = prompt('Ingresa el código de recogida:');
+        if (code) {
+            console.log('Iniciar reserva con código:', code);
+            Notification.show('Función de inicio de reserva en desarrollo', 'info');
+        }
+    }
+
+    handleComplete() {
+        // TODO: Implementar completar reserva con código
+        const code = prompt('Ingresa el código de devolución:');
+        if (code) {
+            console.log('Completar reserva con código:', code);
+            Notification.show('Función de completar reserva en desarrollo', 'info');
+        }
+    }
+
+    handleConfirm() {
+        // TODO: Implementar confirmación de reserva por anfitrión
+        console.log('Confirmar reserva', this.reservation._id);
+        Notification.show('Función de confirmación en desarrollo', 'info');
     }
 }

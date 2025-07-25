@@ -26,12 +26,51 @@ export default class VehicleDetail {
             features: []
         };
 
+        // Normalizar datos para compatibilidad con MongoDB
+        this.normalizeVehicleData();
+
         this.state = {
             currentImageIndex: 0,
             startDate: '',
             endDate: '',
             totalPrice: 0
         };
+    }
+
+    normalizeVehicleData() {
+        // Manejar ubicación (puede ser objeto o string)
+        if (typeof this.vehicle.location === 'object' && this.vehicle.location) {
+            const location = this.vehicle.location;
+            this.vehicle.locationText = `${location.city || ''}, ${location.state || ''}`.replace(/, $/, '');
+        } else {
+            this.vehicle.locationText = this.vehicle.location || 'Ubicación no especificada';
+        }
+
+        // Manejar owner (puede tener estructura diferente)
+        if (this.vehicle.owner && typeof this.vehicle.owner === 'object') {
+            const owner = this.vehicle.owner;
+            this.vehicle.ownerName = owner.fullName || `${owner.firstName || ''} ${owner.lastName || ''}`.trim() || owner.name || 'Propietario';
+            this.vehicle.ownerEmail = owner.email || '';
+        } else {
+            this.vehicle.ownerName = 'Propietario';
+            this.vehicle.ownerEmail = '';
+        }
+
+        // Manejar imágenes
+        if (!this.vehicle.images || this.vehicle.images.length === 0) {
+            this.vehicle.images = [this.vehicle.image || 'https://via.placeholder.com/600x400?text=Sin+imagen'];
+        }
+
+        // Manejar disponibilidad
+        if (this.vehicle.isAvailable !== undefined) {
+            this.vehicle.available = this.vehicle.isAvailable;
+        }
+
+        // Asegurar que rating sea número
+        this.vehicle.rating = this.vehicle.rating || 0;
+        
+        // Asegurar que features sea array
+        this.vehicle.features = this.vehicle.features || [];
     }
 
     calculateTotalPrice() {
@@ -221,16 +260,14 @@ export default class VehicleDetail {
         const ownerInfo = document.createElement('div');
         ownerInfo.className = 'owner-info';
 
-        const owner = this.vehicle.owner || { name: 'Desconocido', joinDate: '', rating: 0 };
-
         ownerInfo.innerHTML = `
             <h3>Propietario</h3>
             <div class="owner-details">
-                <div class="owner-avatar">${owner.name.charAt(0)}</div>
+                <div class="owner-avatar">${this.vehicle.ownerName.charAt(0).toUpperCase()}</div>
                 <div class="owner-text">
-                    <h4>${owner.name}</h4>
-                    <p>Miembro desde ${owner.joinDate ? formatDate(owner.joinDate) : 'N/A'}</p>
-                    <p>Calificación: ${owner.rating} ★</p>
+                    <h4>${this.vehicle.ownerName}</h4>
+                    <p>Miembro desde ${this.vehicle.owner?.joinDate ? formatDate(this.vehicle.owner.joinDate) : this.vehicle.owner?.createdAt ? formatDate(this.vehicle.owner.createdAt) : 'N/A'}</p>
+                    <p>Calificación: ${this.vehicle.owner?.rating || 'Sin calificaciones'} ${this.vehicle.owner?.rating ? '★' : ''}</p>
                 </div>
             </div>
         `;
@@ -246,7 +283,14 @@ export default class VehicleDetail {
         detailHeader.className = 'detail-header';
         detailHeader.innerHTML = `
             <h1>${this.vehicle.make} ${this.vehicle.model} (${this.vehicle.year})</h1>
-            <p class="location">${this.vehicle.location}</p>
+            <p class="location">📍 ${this.vehicle.locationText}</p>
+            <div class="vehicle-specs">
+                <span>👥 ${this.vehicle.seats} asientos</span>
+                ${this.vehicle.doors ? `<span>🚪 ${this.vehicle.doors} puertas</span>` : ''}
+                ${this.vehicle.transmission ? `<span>⚙️ ${this.vehicle.transmission}</span>` : ''}
+                ${this.vehicle.fuelType ? `<span>⛽ ${this.vehicle.fuelType}</span>` : ''}
+                ${this.vehicle.mileage ? `<span>📏 ${this.vehicle.mileage} km</span>` : ''}
+            </div>
         `;
         this.detailElement.appendChild(detailHeader);
 
