@@ -1,7 +1,9 @@
 // routes/payment.js
+import dotenv from 'dotenv'; // ✅ Asegura que las variables estén cargadas aquí
+dotenv.config();
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_51RlWswQISO11FEwtxPLoy4sQ89StCuXRHMjEZSPIhpZb5EY8Zo6oS9PaX2BFpfkl9EGrGeVYiwfG0PkIr9jAZ9r600M0ZG9sbW', {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2022-11-15',
 });
 

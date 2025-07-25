@@ -5,6 +5,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+// Cargar variables de entorno
+dotenv.config();
+console.log('✅ STRIPE_SECRET_KEY desde server.js:', process.env.STRIPE_SECRET_KEY);
 import jwt from 'jsonwebtoken';
 import { connectDB } from './backend/config/database.js';
 import User from './backend/models/User.js';
@@ -13,9 +16,6 @@ import vehicleRoutes from './backend/routes/vehicles.js';
 import paymentRoutes from './backend/routes/payment.js';
 import reservationRoutes from './backend/routes/reservations.js';
 
-
-// Cargar variables de entorno
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
