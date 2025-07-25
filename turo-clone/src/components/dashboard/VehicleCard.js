@@ -76,7 +76,6 @@ export default class VehicleCard {
         
         return `
             <div class="vehicle-actions">
-                <button class="btn btn-primary rent-btn">Reservar</button>
                 <button class="btn btn-outline details-btn">Detalles</button>
             </div>
         `;
@@ -170,11 +169,6 @@ export default class VehicleCard {
         }
     }
 
-    handleRent() {
-        console.log('Reservar vehículo', this.vehicle._id || this.vehicle.id);
-        // Por ahora abre los detalles donde se puede hacer la reserva
-        this.handleDetails();
-    }
 
     handleDetails() {
     const vehicleDetail = new VehicleDetail(this.vehicle);

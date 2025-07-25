@@ -146,7 +146,10 @@ const userSchema = new mongoose.Schema({
             delete ret.emailVerificationExpires;
             return ret;
         }
-    }
+    },
+    toJSON: {
+        virtuals: true,
+    }    
 });
 
 // Virtual para nombre completo

@@ -25,6 +25,8 @@ export default class LoginPage {
 
     async handleSubmit(e) {
         e.preventDefault();
+        const submitBtn = this.container.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
 
         // Limpiar errores previos
         this.state.errors = {};
@@ -40,8 +42,6 @@ export default class LoginPage {
         if (Object.keys(errors).length === 0) {
             try {
                 // Mostrar indicador de carga
-                const submitBtn = this.container.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
                 submitBtn.textContent = 'Iniciando sesión...';
                 submitBtn.disabled = true;
                 
@@ -56,17 +56,14 @@ export default class LoginPage {
                 }, 1500);
                 
             } catch (error) {
-                // Restaurar botón
-                const submitBtn = this.container.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.textContent = 'Iniciar sesión';
-                    submitBtn.disabled = false;
-                }
-                
                 // Mostrar error específico
                 console.error('Login error:', error);
                 this.state.errors.general = error.message || 'Credenciales inválidas. Verifica tu email y contraseña.';
                 this.updateForm();
+            } finally {
+                // Restaurar botón en ambos casos (éxito o error)
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         }
     }

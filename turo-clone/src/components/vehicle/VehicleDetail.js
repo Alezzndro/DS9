@@ -1,4 +1,6 @@
 import { formatCurrency, formatDate } from '../../utils/helpers.js';
+import { getUserData } from '../../services/authService.js';
+import { createReservation } from '../../services/reservationService.js';
 import ReviewForm from './ReviewForm.js';
 
 export default class VehicleDetail {
@@ -98,19 +100,37 @@ export default class VehicleDetail {
     }
 
     async handleBookNow() {
-        if (!this.state.startDate || !this.state.endDate) {
-            alert('Por favor selecciona las fechas de alquiler');
-            return;
-        }
+    if (!this.state.startDate || !this.state.endDate) {
+        alert('Por favor selecciona las fechas de alquiler');
+        return;
+    }
 
-        const payload = {
-            vehicleId: this.vehicle.id,
-            startDate: this.state.startDate,
-            endDate: this.state.endDate,
-            total: this.state.totalPrice
-        };
+    const user = getUserData();
+    if (!user) {
+        alert('Debes iniciar sesión para hacer una reservación.');
+        return;
+    }
 
-        try {
+    try {
+        // 1. Guardar la reservación en el backend (MongoDB)
+        const reservation = await createReservation(
+            this.vehicle._id || this.vehicle.id,
+            this.state.startDate,
+            this.state.endDate,
+            user._id,
+            this.state.totalPrice
+        );
+
+        // 2. Si se guardó, iniciar la sesión de pago
+        if (reservation && reservation._id) {
+            const payload = {
+                vehicleId: this.vehicle._id || this.vehicle.id,
+                startDate: this.state.startDate,
+                endDate: this.state.endDate,
+                total: this.state.totalPrice,
+                reservationId: reservation._id, // por si lo necesitas para luego confirmar
+            };
+
             const response = await fetch('http://localhost:5000/create-checkout-session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -123,11 +143,14 @@ export default class VehicleDetail {
             } else {
                 alert('No se pudo iniciar el pago. Intenta de nuevo.');
             }
-        } catch (err) {
-            console.error('Error al crear sesión de pago:', err);
-            alert('Error al procesar el pago.');
+        } else {
+            alert('No se pudo guardar la reservación.');
         }
+    } catch (err) {
+        console.error('Error al reservar:', err);
+        alert('Ocurrió un error al procesar la reservación.');
     }
+}
 
     handleImageChange(index) {
         this.state.currentImageIndex = index;
