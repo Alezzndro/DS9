@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 // Cargar variables de entorno
 dotenv.config();
-console.log('✅ STRIPE_SECRET_KEY desde server.js:', process.env.STRIPE_SECRET_KEY);
+console.log('STRIPE_SECRET_KEY desde server.js:', process.env.STRIPE_SECRET_KEY);
 import jwt from 'jsonwebtoken';
 import { connectDB } from './backend/config/database.js';
 import User from './backend/models/User.js';

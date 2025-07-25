@@ -1,5 +1,5 @@
 // routes/payment.js
-import dotenv from 'dotenv'; // ✅ Asegura que las variables estén cargadas aquí
+import dotenv from 'dotenv'; // Asegura que las variables estén cargadas aquí
 dotenv.config();
 import Stripe from 'stripe';
 
