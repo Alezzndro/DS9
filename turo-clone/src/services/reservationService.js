@@ -1,18 +1,14 @@
 import { apiRequest } from './api.js';
 
-export async function createReservation(vehicleId, startDate, endDate, userId, total) {
-    try {
-        const response = await apiRequest('/reservations', 'POST', {
-            vehicleId,
-            startDate,
-            endDate,
-            userId,
-            total
-        });
-        return response;
-    } catch (error) {
-        throw error;
-    }
+export async function createReservation(vehicleId, startDate, endDate, pickupLocation, returnLocation, notes = '') {
+    return apiRequest('/reservations', 'POST', {
+        vehicleId,
+        startDate,
+        endDate,
+        pickupLocation,
+        returnLocation,
+        notes
+    });
 }
 
 export async function getReservations(status = 'all') {

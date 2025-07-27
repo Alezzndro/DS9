@@ -1,7 +1,7 @@
 import { formatCurrency, formatDate } from '../../utils/helpers.js';
 import { getUserData } from '../../services/authService.js';
 import { createReservation } from '../../services/reservationService.js';
-import ReviewForm from './ReviewForm.js';
+import Notification from '../common/Notification.js';
 
 export default class VehicleDetail {
     constructor(vehicle) {
@@ -100,57 +100,38 @@ export default class VehicleDetail {
     }
 
     async handleBookNow() {
-    if (!this.state.startDate || !this.state.endDate) {
-        alert('Por favor selecciona las fechas de alquiler');
-        return;
-    }
-
-    const user = getUserData();
-    if (!user) {
-        alert('Debes iniciar sesión para hacer una reservación.');
-        return;
-    }
-
-    try {
-        // 1. Guardar la reservación en el backend (MongoDB)
-        const reservation = await createReservation(
-            this.vehicle._id || this.vehicle.id,
-            this.state.startDate,
-            this.state.endDate,
-            user._id,
-            this.state.totalPrice
-        );
-
-        // 2. Si se guardó, iniciar la sesión de pago
-        if (reservation && reservation._id) {
-            const payload = {
-                vehicleId: this.vehicle._id || this.vehicle.id,
-                startDate: this.state.startDate,
-                endDate: this.state.endDate,
-                total: this.state.totalPrice,
-                reservationId: reservation._id, // por si lo necesitas para luego confirmar
-            };
-
-            const response = await fetch('http://localhost:5000/create-checkout-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json();
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                alert('No se pudo iniciar el pago. Intenta de nuevo.');
-            }
-        } else {
-            alert('No se pudo guardar la reservación.');
+        if (!this.state.startDate || !this.state.endDate) {
+            alert('Por favor selecciona las fechas de alquiler');
+            return;
         }
-    } catch (err) {
-        console.error('Error al reservar:', err);
-        alert('Ocurrió un error al procesar la reservación.');
+
+        // Validar fechas en frontend
+        const today = new Date();
+        const start = new Date(this.state.startDate);
+        if (start < today.setHours(0,0,0,0)) {
+            alert('La fecha de inicio no puede ser en el pasado');
+            return;
+        }
+
+        try {
+            const reservation = await createReservation(
+                this.vehicle._id || this.vehicle.id,
+                this.state.startDate,
+                this.state.endDate,
+                this.vehicle.locationText, // pickupLocation
+                this.vehicle.locationText  // returnLocation (puedes cambiarlo si tienes otra lógica)
+            );
+
+            if (reservation && reservation._id) {
+                alert('Reserva creada. Ahora puedes pagar.');
+                // Aquí puedes mostrar el botón "Pagar ahora"
+            } else {
+                alert('No se pudo crear la reserva');
+            }
+        } catch (err) {
+            alert('Error al crear la reserva: ' + err.message);
+        }
     }
-}
 
     handleImageChange(index) {
         this.state.currentImageIndex = index;

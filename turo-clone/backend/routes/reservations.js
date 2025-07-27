@@ -4,9 +4,7 @@ import User from '../models/User.js';
 
 export default async function reservationRoutes(fastify, options) {
     // Crear una nueva reserva
-    fastify.post('/api/reservations', {
-        preValidation: [fastify.authenticate]
-    }, async (request, reply) => {
+    fastify.post('/api/reservations', { preValidation: [fastify.authenticate] }, async (request, reply) => {
         try {
             const { vehicleId, startDate, endDate, pickupLocation, returnLocation, notes } = request.body;
             const guestId = request.user.id;
@@ -26,7 +24,37 @@ export default async function reservationRoutes(fastify, options) {
                 return reply.code(400).send({ error: 'No puedes reservar tu propio vehículo' });
             }
 
-            // Verificar disponibilidad en las fechas solicitadas
+            // Verificar si el usuario ya tiene una reserva para ese vehículo y fechas
+            const userExistingReservation = await Reservation.findOne({
+                vehicle: vehicleId,
+                guest: guestId,
+                $or: [
+                    {
+                        $and: [
+                            { startDate: { $lte: new Date(startDate) } },
+                            { endDate: { $gte: new Date(startDate) } }
+                        ]
+                    },
+                    {
+                        $and: [
+                            { startDate: { $lte: new Date(endDate) } },
+                            { endDate: { $gte: new Date(endDate) } }
+                        ]
+                    },
+                    {
+                        $and: [
+                            { startDate: { $gte: new Date(startDate) } },
+                            { endDate: { $lte: new Date(endDate) } }
+                        ]
+                    }
+                ]
+            });
+
+            if (userExistingReservation) {
+                return reply.code(400).send({ error: 'Ya tienes una reserva para este vehículo en esas fechas' });
+            }
+
+            // Verificar disponibilidad general (otros usuarios)
             const existingReservations = await Reservation.find({
                 vehicle: vehicleId,
                 status: { $in: ['confirmed', 'active'] },
@@ -56,36 +84,29 @@ export default async function reservationRoutes(fastify, options) {
                 return reply.code(400).send({ error: 'El vehículo no está disponible en esas fechas' });
             }
 
-            // Calcular precio total
-            const days = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
+            // Calcula el total
+            const days = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
             const totalPrice = days * vehicle.pricePerDay;
 
-            // Crear la reserva
-            const reservation = new Reservation({
+            // Crea la reserva usando el modelo de Mongoose
+            const reservation = await Reservation.create({
                 guest: guestId,
-                host: vehicle.owner._id,
-                vehicle: vehicleId,
-                startDate: new Date(startDate),
-                endDate: new Date(endDate),
+                host: vehicle.owner._id || vehicle.owner, // asegúrate de que owner sea un ObjectId
+                vehicle: vehicle._id,
+                startDate,
+                endDate,
                 totalPrice,
-                pickupLocation: pickupLocation || vehicle.location,
-                returnLocation: returnLocation || vehicle.location,
-                notes: notes || ''
+                status: 'pending',
+                pickupLocation,
+                returnLocation,
+                notes: notes || '',
+                paymentStatus: 'pending'
             });
 
-            await reservation.save();
-
-            // Poblar los datos para la respuesta
-            await reservation.populate([
-                { path: 'guest', select: 'name email' },
-                { path: 'host', select: 'name email' },
-                { path: 'vehicle', select: 'make model year pricePerDay location photos' }
-            ]);
-
-            reply.code(201).send(reservation);
+            reply.send(reservation);
         } catch (error) {
-            fastify.log.error(error);
-            reply.code(500).send({ error: 'Error al crear la reserva' });
+            console.error(error);
+            reply.code(500).send({ message: error.message || 'Error interno del servidor' });
         }
     });
 
@@ -125,8 +146,8 @@ export default async function reservationRoutes(fastify, options) {
 
             reply.send(reservations);
         } catch (error) {
-            fastify.log.error(error);
-            reply.code(500).send({ error: 'Error al obtener las reservas' });
+            console.error(error);
+            reply.code(500).send({ error: error.message || 'Error al obtener las reservas' });
         }
     });
 

@@ -46,7 +46,7 @@ export async function apiRequest(endpoint, method = 'GET', body = null, requires
         if (!response.ok) {
             // Manejar diferentes tipos de error
             if (response.status === 400) {
-                throw new Error(data.message || 'Datos incorrectos');
+                throw new Error(data.error || data.message || 'Datos incorrectos');
             } else if (response.status === 404) {
                 throw new Error(data.message || 'Recurso no encontrado');
             } else if (response.status === 500) {

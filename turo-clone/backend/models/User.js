@@ -133,6 +133,12 @@ const userSchema = new mongoose.Schema({
         totalSpent: { type: Number, default: 0 },
         rating: { type: Number, default: 0 },
         reviewCount: { type: Number, default: 0 }
+    },
+    
+    // Balance del usuario
+    balance: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true, // Agrega createdAt y updatedAt automáticamente

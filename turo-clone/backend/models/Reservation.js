@@ -1,21 +1,10 @@
 import mongoose from 'mongoose';
+const { Schema } = mongoose;
 
-const reservationSchema = new mongoose.Schema({
-    guest: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    host: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    vehicle: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Vehicle',
-        required: true
-    },
+const reservationSchema = new Schema({
+    guest: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    host: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    vehicle: { type: Schema.Types.ObjectId, ref: 'Vehicle', required: true },
     startDate: {
         type: Date,
         required: true
@@ -91,6 +80,4 @@ reservationSchema.pre('save', function(next) {
     next();
 });
 
-const Reservation = mongoose.model('Reservation', reservationSchema);
-
-export default Reservation;
+export default mongoose.model('Reservation', reservationSchema);
