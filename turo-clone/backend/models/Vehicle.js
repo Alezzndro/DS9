@@ -205,8 +205,9 @@ const vehicleSchema = new mongoose.Schema({
 
 // Virtual para la imagen principal
 vehicleSchema.virtual('primaryImage').get(function() {
+    if (!Array.isArray(this.images) || this.images.length === 0) return null;
     const primary = this.images.find(img => img.isPrimary);
-    return primary ? primary.url : (this.images[0] ? this.images[0].url : null);
+    return primary ? primary.url : this.images[0].url;
 });
 
 // Virtual para el nombre completo del vehículo
