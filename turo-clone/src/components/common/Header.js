@@ -13,7 +13,7 @@ export default class Header {
 
     getUserInfo() {
         try {
-            const userInfo = localStorage.getItem('turo_clone_user_data');
+            const userInfo = localStorage.getItem('user'); // Cambiado para usar la clave correcta
             return userInfo ? JSON.parse(userInfo) : null;
         } catch (error) {
             console.error('Error parsing user info:', error);
@@ -25,7 +25,7 @@ export default class Header {
         try {
             // Limpiar localStorage usando las mismas claves que authService
             localStorage.removeItem('turo_clone_auth_token');
-            localStorage.removeItem('turo_clone_user_data');
+            localStorage.removeItem('user'); // Usar la clave correcta
             
             // Mostrar notificación
             Notification.show('Sesión cerrada exitosamente', 'success');
@@ -47,6 +47,9 @@ export default class Header {
         
         if (this.isAuthenticated) {
             // Header para usuarios autenticados
+            const isAdmin = this.userInfo && this.userInfo.role === 'admin';
+            const adminLink = isAdmin ? '<a href="/admin" data-link>Panel Admin</a>' : '';
+            
             header.innerHTML = `
                 <div class="container">
                     <nav>
@@ -54,6 +57,7 @@ export default class Header {
                         <div class="nav-links">
                             <a href="/search" data-link>Buscar vehículos</a>
                             <a href="/dashboard" data-link>Mi Dashboard</a>
+                            ${adminLink}
                             <button class="btn logout-btn">Cerrar sesión</button>
                         </div>
                     </nav>

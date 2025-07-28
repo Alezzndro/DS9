@@ -16,6 +16,7 @@ import vehicleRoutes from './backend/routes/vehicles.js';
 import paymentRoutes from './backend/routes/payment.js';
 import reservationRoutes from './backend/routes/reservations.js';
 import stripeRoutes from './backend/routes/stripe.js'; // Importar rutas de Stripe
+import adminRoutes from './backend/routes/admin.js'; // Importar rutas de admin
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,7 +28,7 @@ const start = async () => {
     try {
         // Configurar CORS
         await app.register(cors, {
-            origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8080'], // Puertos comunes para desarrollo
+            origin: ['http://localhost:5000', 'http://localhost:5173', 'http://localhost:8080'], // Puertos comunes para desarrollo
             methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // <-- AGREGA PATCH AQUÍ
             allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: true
@@ -91,6 +92,7 @@ const start = async () => {
         await app.register(paymentRoutes);
         await app.register(reservationRoutes);
         await app.register(stripeRoutes); // Registrar rutas de Stripe
+        await app.register(adminRoutes, { prefix: '/api/admin' }); // Registrar rutas de admin
 
         // Ruta principal
         app.get('/', async (request, reply) => {
@@ -143,7 +145,7 @@ const start = async () => {
         });
 
         // Iniciar servidor
-        const port = process.env.PORT || 5000;
+        const port = process.env.PORT || 3000;
         await app.listen({ port, host: '0.0.0.0' });
         console.log(`Servidor corriendo en puerto ${port}`);
         

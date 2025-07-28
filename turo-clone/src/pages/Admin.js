@@ -1,15 +1,45 @@
 import Header from '../components/common/Header.js';
 import Notification from '../components/common/Notification.js';
+import AdminSidebar from '../components/admin/AdminSidebar.js';
+import AdminDashboard from '../components/admin/AdminDashboard.js';
+import AdminUsers from '../components/admin/AdminUsers.js';
+import AdminVehicles from '../components/admin/AdminVehicles.js';
+import AdminReservations from '../components/admin/AdminReservations.js';
+import AdminAnalytics from '../components/admin/AdminAnalytics.js';
+import AdminSettings from '../components/admin/AdminSettings.js';
 
 export default class Admin {
     constructor() {
-        this.header = new Header();
+        this.sidebar = new AdminSidebar();
+        this.dashboard = new AdminDashboard();
+        this.users = new AdminUsers();
+        this.vehicles = new AdminVehicles();
+        this.reservations = new AdminReservations();
+        this.analytics = new AdminAnalytics();
+        this.settings = new AdminSettings();
+        this.currentSection = 'dashboard';
+        
+        // Legacy state for existing functionality
         this.state = {
             activeTab: 'documents',
             pendingDocuments: this.getPendingDocuments(),
             pendingVehicles: this.getPendingVehicles(),
             reportedReviews: this.getReportedReviews()
         };
+
+        // Set up global reference for component communication
+        window.adminApp = this;
+
+        // Listen for section changes
+        document.addEventListener('admin-section-change', (e) => {
+            this.navigateToSection(e.detail.section);
+        });
+    }
+
+    navigateToSection(section) {
+        this.currentSection = section;
+        this.sidebar.setActiveSection(section);
+        this.renderCurrentSection();
     }
 
     getPendingDocuments() {
@@ -76,9 +106,143 @@ export default class Admin {
         ];
     }
 
-    handleTabChange(tab) {
-        this.state.activeTab = tab;
-        this.renderContent();
+    handleUserAction(userId, action) {
+        if (this.users && typeof this.users.handleUserAction === 'function') {
+            this.users.handleUserAction(userId, action);
+        }
+    }
+
+    editUser(userId) {
+        if (this.users && typeof this.users.editUser === 'function') {
+            const user = this.users.users.find(u => u.id === userId);
+            if (user) {
+                this.users.editUser(user);
+            }
+        }
+    }
+
+    saveUserChanges(userId) {
+        if (this.users && typeof this.users.saveUserChanges === 'function') {
+            this.users.saveUserChanges(userId);
+        }
+    }
+
+    saveVehicleChanges(vehicleId) {
+        if (this.vehicles && typeof this.vehicles.saveVehicleChanges === 'function') {
+            this.vehicles.saveVehicleChanges(vehicleId);
+        }
+    }
+
+    saveReservationChanges(reservationId) {
+        if (this.reservations && typeof this.reservations.saveReservationChanges === 'function') {
+            this.reservations.saveReservationChanges(reservationId);
+        }
+    }
+
+    goToPage(page) {
+        if (this.users && typeof this.users.goToPage === 'function') {
+            this.users.goToPage(page);
+        }
+    }
+
+    renderCurrentSection() {
+        const contentContainer = document.querySelector('.admin-content');
+        if (!contentContainer) return;
+
+        // Clear current content
+        contentContainer.innerHTML = '';
+
+        let sectionComponent;
+        switch (this.currentSection) {
+            case 'dashboard':
+                sectionComponent = this.dashboard.render();
+                break;
+            case 'users':
+                sectionComponent = this.users.render();
+                break;
+            case 'vehicles':
+                sectionComponent = this.renderVehiclesSection();
+                break;
+            case 'reservations':
+                sectionComponent = this.renderReservationsSection();
+                break;
+            case 'documents':
+                sectionComponent = this.renderDocumentsSection();
+                break;
+            case 'payments':
+                sectionComponent = this.renderPaymentsSection();
+                break;
+            case 'reviews':
+                sectionComponent = this.renderReviewsSection();
+                break;
+            case 'analytics':
+                sectionComponent = this.analytics.render();
+                break;
+            case 'settings':
+                sectionComponent = this.renderSettingsSection();
+                break;
+            default:
+                sectionComponent = this.dashboard.render();
+        }
+
+        contentContainer.appendChild(sectionComponent);
+    }
+
+    renderVehiclesSection() {
+        return this.vehicles.render();
+    }
+
+    renderReservationsSection() {
+        return this.reservations.render();
+    }
+
+    renderDocumentsSection() {
+        const section = document.createElement('div');
+        section.className = 'admin-documents';
+        section.innerHTML = `
+            <div class="section-header">
+                <h1>Gestión de Documentos</h1>
+                <p>Revisa y aprueba documentos de usuarios</p>
+            </div>
+            <div class="documents-content">
+                ${this.renderDocumentsTab().outerHTML}
+            </div>
+        `;
+        return section;
+    }
+
+    renderPaymentsSection() {
+        const section = document.createElement('div');
+        section.className = 'admin-payments';
+        section.innerHTML = `
+            <div class="section-header">
+                <h1>Gestión de Pagos</h1>
+                <p>Administra todos los pagos y transacciones</p>
+            </div>
+            <div class="payments-content">
+                <p>Funcionalidad de pagos en desarrollo...</p>
+            </div>
+        `;
+        return section;
+    }
+
+    renderReviewsSection() {
+        const section = document.createElement('div');
+        section.className = 'admin-reviews';
+        section.innerHTML = `
+            <div class="section-header">
+                <h1>Gestión de Reseñas</h1>
+                <p>Modera reseñas reportadas por usuarios</p>
+            </div>
+            <div class="reviews-content">
+                ${this.renderReviewsTab().outerHTML}
+            </div>
+        `;
+        return section;
+    }
+
+    renderSettingsSection() {
+        return this.settings.render();
     }
 
     handleDocumentAction(userId, action) {
@@ -305,21 +469,43 @@ export default class Admin {
 
     render() {
         const page = document.createElement('div');
-        page.className = 'admin-page';
+        page.className = 'admin-layout';
         
-        page.appendChild(this.header.render());
+        // Add sidebar
+        page.appendChild(this.sidebar.render());
         
-        const container = document.createElement('div');
-        container.className = 'container';
+        // Add main content area
+        const main = document.createElement('div');
+        main.className = 'admin-main';
         
-        const title = document.createElement('h1');
-        title.textContent = 'Panel de Administración';
-        container.appendChild(title);
+        // Add admin header (different from main site header)
+        const header = document.createElement('div');
+        header.className = 'admin-header';
+        header.innerHTML = `
+            <div class="admin-header-content">
+                <h2>Panel de Administración</h2>
+                <div class="admin-header-actions">
+                    <span>Administrador</span>
+                    <button class="btn btn-outline" onclick="window.location.href='/'">
+                        Volver al sitio
+                    </button>
+                </div>
+            </div>
+        `;
+        main.appendChild(header);
         
-        container.appendChild(this.renderTabs());
-        container.appendChild(this.renderContent());
+        // Add content container
+        const content = document.createElement('div');
+        content.className = 'admin-content';
+        main.appendChild(content);
         
-        page.appendChild(container);
+        page.appendChild(main);
+        
+        // Render initial section
+        setTimeout(() => {
+            this.renderCurrentSection();
+        }, 0);
+        
         return page;
     }
 }

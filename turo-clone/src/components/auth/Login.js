@@ -45,13 +45,18 @@ export default class LoginPage {
                 submitBtn.textContent = 'Iniciando sesión...';
                 submitBtn.disabled = true;
                 
-                await login(this.state.email, this.state.password);
+                const user = await login(this.state.email, this.state.password);
                 
                 const notification = new Notification('Inicio de sesión exitoso!', 'success');
                 document.body.appendChild(notification.render());
                 
                 setTimeout(() => {
-                    window.history.pushState({}, '', '/dashboard');
+                    // Redirigir según el rol del usuario
+                    if (user.role === 'admin') {
+                        window.history.pushState({}, '', '/admin');
+                    } else {
+                        window.history.pushState({}, '', '/dashboard');
+                    }
                     window.dispatchEvent(new PopStateEvent('popstate'));
                 }, 1500);
                 
