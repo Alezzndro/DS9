@@ -139,6 +139,8 @@ export default class VehicleDetail {
             alert('Por favor selecciona las fechas de alquiler');
             return;
         }
+        const payBtn = this.detailElement.querySelector('.pay-now-btn');
+        payBtn.disabled = true; // Desactivar para evitar múltiples clics
         try {
             // Envía un flag para que el backend la cree como completada
             const reservation = await createReservation(
@@ -152,11 +154,13 @@ export default class VehicleDetail {
             );
             if (!reservation || !reservation._id) {
                 alert('No se pudo crear la reserva para el pago');
+                payBtn.disabled = false;
                 return;
             }
             await startStripeCheckout(reservation._id);
         } catch (err) {
             alert('Error al iniciar el pago: ' + (err.message || err));
+            payBtn.disabled = false;
         }
     }
 

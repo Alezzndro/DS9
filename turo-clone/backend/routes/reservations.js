@@ -10,7 +10,7 @@ export default async function reservationRoutes(fastify, options) {
         preValidation: [fastify.authenticate]
     }, async (request, reply) => {
         try {
-            const { vehicleId, startDate, endDate, pickupLocation, returnLocation, notes } = request.body;
+            const { vehicleId, startDate, endDate, pickupLocation, returnLocation, notes, completedDirectPay } = request.body;
             const guestId = request.user.id;
 
             // Verificar que el vehículo existe y está disponible
@@ -66,6 +66,9 @@ export default async function reservationRoutes(fastify, options) {
             const days = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
             const totalPrice = days * vehicle.pricePerDay;
 
+            const status = completedDirectPay ? 'completed' : 'pending';
+            const paymentStatus = completedDirectPay ? 'paid' : 'pending';
+
             // Crear la reserva
             const reservation = new Reservation({
                 guest: new mongoose.Types.ObjectId(guestId),
@@ -76,7 +79,9 @@ export default async function reservationRoutes(fastify, options) {
                 totalPrice,
                 pickupLocation: pickupLocation || vehicle.location,
                 returnLocation: returnLocation || vehicle.location,
-                notes: notes || ''
+                notes: notes || '',
+                status,
+                paymentStatus
             });
 
             await reservation.save();
