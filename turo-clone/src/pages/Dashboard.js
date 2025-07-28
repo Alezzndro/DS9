@@ -86,9 +86,15 @@ export default class Dashboard {
             this.state.isLoadingReservations = true;
             const reservations = await getReservations();
             this.state.reservations = reservations || [];
+            
+            // Actualizar la vista si está en la pestaña de reservas
+            if (this.state.activeTab === 'reservations') {
+                this.refreshReservationsTab();
+            }
         } catch (error) {
             console.error('Error cargando reservas:', error);
             Notification.show('Error al cargar las reservas', 'error');
+            // En caso de error, mantener array vacío
             this.state.reservations = [];
         } finally {
             this.state.isLoadingReservations = false;
@@ -113,7 +119,6 @@ export default class Dashboard {
             contentContainer.innerHTML = '';
             contentContainer.appendChild(this.renderReservationsTab());
         }
-        
     }
 
     handleAddVehicle() {
@@ -181,7 +186,6 @@ export default class Dashboard {
         
         if (userData) {
             return {
-                _id: userData._id, // <-- AGREGA ESTA LÍNEA
                 name: userData.fullName || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Usuario',
                 email: userData.email || '',
                 phone: userData.phone || '',
@@ -267,17 +271,8 @@ export default class Dashboard {
             `;
             return container;
         }
-
-        // FILTRO: Solo mostrar reservas del usuario autenticado
-        const currentUser = this.state.user;
-        const myReservations = this.state.reservations.filter(r => {
-            // guest puede ser objeto o string
-            const guestId = (r.guest && (r.guest._id || r.guest.id || r.guest)).toString();
-            const hostId = (r.host && (r.host._id || r.host.id || r.host)).toString();
-            return guestId === currentUser._id.toString() || hostId === currentUser._id.toString();
-        });
-
-        if (myReservations.length === 0) {
+        
+        if (this.state.reservations.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <p>No tienes reservas</p>
@@ -288,10 +283,10 @@ export default class Dashboard {
         }
         
         // Categorizar reservas
-        const activeReservations = myReservations.filter(r =>
+        const activeReservations = this.state.reservations.filter(r => 
             ['pending', 'confirmed', 'active'].includes(r.status)
         );
-        const pastReservations = myReservations.filter(r =>
+        const pastReservations = this.state.reservations.filter(r => 
             ['completed', 'cancelled'].includes(r.status)
         );
         
@@ -372,7 +367,7 @@ export default class Dashboard {
             return container;
         }
         
-        // Renderizar vehículos with callbacks
+        // Renderizar vehículos con callbacks
         this.state.vehicles.forEach(vehicle => {
             const vehicleCard = new VehicleCard(vehicle, true, {
                 onEdit: (vehicle) => this.handleEditVehicle(vehicle),

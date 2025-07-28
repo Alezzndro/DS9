@@ -5,7 +5,7 @@ export async function createReservation(vehicleId, startDate, endDate, pickupLoc
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('turo_clone_token')}`
+            Authorization: `Bearer ${localStorage.getItem('turo_clone_auth_token')}`
         },
         body: JSON.stringify({
             vehicleId,
