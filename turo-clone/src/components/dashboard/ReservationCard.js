@@ -62,36 +62,13 @@ export default class ReservationCard {
     }
 
     renderActions() {
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-        const isGuest = this.reservation.guest._id === currentUser._id;
-        const status = this.reservation.status;
-        const paymentStatus = this.reservation.paymentStatus;
-
         let actions = '';
-
-        // Botón de pago solo para el huésped y si está pendiente
-        if (isGuest && paymentStatus === 'pending') {
-            actions += `<button class="btn btn-primary pay-now-btn" data-reservation-id="${this.reservation._id}">Pagar ahora</button>`;
-        } else if (isGuest && paymentStatus === 'paid') {
+        if (this.reservation.paymentStatus === 'pending') {
+            actions += `<button class="btn btn-primary pay-now-btn">Pagar ahora</button>`;
+            actions += `<button class="btn btn-danger cancel-btn">Cancelar</button>`;
+        } else if (this.reservation.paymentStatus === 'paid') {
             actions += `<span class="paid-label">Pago completado</span>`;
         }
-
-        // Acciones de reserva según estado
-        if (status === 'pending' && isGuest) {
-            actions += `<button class="btn btn-outline cancel-btn" data-reservation-id="${this.reservation._id}">Cancelar</button>`;
-        } else if (status === 'confirmed' && isGuest) {
-            actions += `
-                <button class="btn btn-outline cancel-btn" data-reservation-id="${this.reservation._id}">Cancelar</button>
-                <button class="btn btn-primary start-btn" data-reservation-id="${this.reservation._id}">Iniciar reserva</button>
-            `;
-        } else if (status === 'confirmed' && !isGuest) {
-            actions += `<button class="btn btn-primary confirm-btn" data-reservation-id="${this.reservation._id}">Confirmar reserva</button>`;
-        } else if (status === 'active' && isGuest) {
-            actions += `<button class="btn btn-primary complete-btn" data-reservation-id="${this.reservation._id}">Completar reserva</button>`;
-        } else if (status === 'completed') {
-            actions += `<button class="btn btn-outline review-btn" data-reservation-id="${this.reservation._id}">Dejar reseña</button>`;
-        }
-
         return actions;
     }
 
@@ -126,31 +103,6 @@ export default class ReservationCard {
         
         // Agregar event listeners para los botones de acción
         this.attachEventListeners(card);
-
-        if (this.reservation.paymentStatus === 'pending') {
-            const actionsDiv = document.createElement('div');
-            actionsDiv.style.display = 'flex';
-            actionsDiv.style.gap = '8px';
-
-            const payBtn = document.createElement('button');
-            payBtn.textContent = 'Pagar ahora';
-            payBtn.className = 'pay-now-btn';
-            payBtn.onclick = () => startStripeCheckout(this.reservation._id);
-
-            const cancelBtn = document.createElement('button');
-            cancelBtn.textContent = 'Cancelar';
-            cancelBtn.className = 'cancel-btn btn btn-danger';
-            cancelBtn.onclick = () => this.handleCancel();
-
-            actionsDiv.appendChild(payBtn);
-            actionsDiv.appendChild(cancelBtn);
-            card.appendChild(actionsDiv);
-        } else if (this.reservation.paymentStatus === 'paid') {
-            const paidLabel = document.createElement('span');
-            paidLabel.textContent = 'Pago completado';
-            paidLabel.className = 'paid-label';
-            card.appendChild(paidLabel);
-        }
         
         return card;
     }

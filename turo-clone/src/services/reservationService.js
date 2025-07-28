@@ -1,14 +1,24 @@
 import { apiRequest } from './api.js';
 
-export async function createReservation(vehicleId, startDate, endDate, pickupLocation, returnLocation, notes = '') {
-    return apiRequest('/reservations', 'POST', {
-        vehicleId,
-        startDate,
-        endDate,
-        pickupLocation,
-        returnLocation,
-        notes
+export async function createReservation(vehicleId, startDate, endDate, pickupLocation, returnLocation, notes = '', completedDirectPay = false) {
+    const res = await fetch('http://localhost:5000/api/reservations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('turo_clone_token')}`
+        },
+        body: JSON.stringify({
+            vehicleId,
+            startDate,
+            endDate,
+            pickupLocation,
+            returnLocation,
+            notes,
+            completedDirectPay // <-- nuevo campo
+        })
     });
+    if (!res.ok) throw new Error('Error al crear la reserva');
+    return await res.json();
 }
 
 export async function getReservations(status = 'all') {

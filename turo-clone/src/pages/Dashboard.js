@@ -23,6 +23,15 @@ export default class Dashboard {
         // Cargar datos reales
         this.loadUserVehicles();
         this.loadUserReservations();
+
+        // NUEVO: Si viene de Stripe, recarga reservas
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('payment') === 'success') {
+            this.loadUserReservations();
+            Notification.show('¡Pago realizado con éxito!', 'success');
+            // Opcional: limpiar el parámetro de la URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
     }
 
     getSampleVehicles() {
@@ -104,6 +113,7 @@ export default class Dashboard {
             contentContainer.innerHTML = '';
             contentContainer.appendChild(this.renderReservationsTab());
         }
+        
     }
 
     handleAddVehicle() {
@@ -171,6 +181,7 @@ export default class Dashboard {
         
         if (userData) {
             return {
+                _id: userData._id, // <-- AGREGA ESTA LÍNEA
                 name: userData.fullName || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Usuario',
                 email: userData.email || '',
                 phone: userData.phone || '',
@@ -246,7 +257,7 @@ export default class Dashboard {
     renderReservationsTab() {
         const container = document.createElement('div');
         container.className = 'reservations-container';
-        
+
         // Mostrar estado de carga
         if (this.state.isLoadingReservations) {
             container.innerHTML = `
@@ -256,8 +267,17 @@ export default class Dashboard {
             `;
             return container;
         }
-        
-        if (this.state.reservations.length === 0) {
+
+        // FILTRO: Solo mostrar reservas del usuario autenticado
+        const currentUser = this.state.user;
+        const myReservations = this.state.reservations.filter(r => {
+            // guest puede ser objeto o string
+            const guestId = (r.guest && (r.guest._id || r.guest.id || r.guest)).toString();
+            const hostId = (r.host && (r.host._id || r.host.id || r.host)).toString();
+            return guestId === currentUser._id.toString() || hostId === currentUser._id.toString();
+        });
+
+        if (myReservations.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <p>No tienes reservas</p>
@@ -268,10 +288,10 @@ export default class Dashboard {
         }
         
         // Categorizar reservas
-        const activeReservations = this.state.reservations.filter(r => 
+        const activeReservations = myReservations.filter(r =>
             ['pending', 'confirmed', 'active'].includes(r.status)
         );
-        const pastReservations = this.state.reservations.filter(r => 
+        const pastReservations = myReservations.filter(r =>
             ['completed', 'cancelled'].includes(r.status)
         );
         

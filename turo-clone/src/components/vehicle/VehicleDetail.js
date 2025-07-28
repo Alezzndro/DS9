@@ -1,6 +1,7 @@
 import { formatCurrency, formatDate } from '../../utils/helpers.js';
 import { getUserData } from '../../services/authService.js';
 import { createReservation } from '../../services/reservationService.js';
+import { startStripeCheckout } from '../../services/stripeService.js';
 import Notification from '../common/Notification.js';
 
 export default class VehicleDetail {
@@ -133,6 +134,32 @@ export default class VehicleDetail {
         }
     }
 
+    async handleDirectPay() {
+        if (!this.state.startDate || !this.state.endDate) {
+            alert('Por favor selecciona las fechas de alquiler');
+            return;
+        }
+        try {
+            // Envía un flag para que el backend la cree como completada
+            const reservation = await createReservation(
+                this.vehicle._id || this.vehicle.id,
+                this.state.startDate,
+                this.state.endDate,
+                this.vehicle.locationText,
+                this.vehicle.locationText,
+                '', // notes
+                true // <-- nuevo parámetro: completedDirectPay
+            );
+            if (!reservation || !reservation._id) {
+                alert('No se pudo crear la reserva para el pago');
+                return;
+            }
+            await startStripeCheckout(reservation._id);
+        } catch (err) {
+            alert('Error al iniciar el pago: ' + (err.message || err));
+        }
+    }
+
     handleImageChange(index) {
         this.state.currentImageIndex = index;
         this.updateMainImage();
@@ -207,7 +234,7 @@ export default class VehicleDetail {
         form.querySelector('#startDate').addEventListener('change', (e) => this.handleDateChange(e));
         form.querySelector('#endDate').addEventListener('change', (e) => this.handleDateChange(e));
         form.querySelector('.book-now-btn').addEventListener('click', () => this.handleBookNow());
-        form.querySelector('.pay-now-btn').addEventListener('click', () => this.handleBookNow());
+        form.querySelector('.pay-now-btn').addEventListener('click', () => this.handleDirectPay());
 
         return form;
     }

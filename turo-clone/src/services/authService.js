@@ -17,8 +17,8 @@ export async function login(email, password) {
         const response = await apiRequest('/auth/login', 'POST', { email, password }, false);
         
         // Guardar token y datos de usuario
-        setAuthToken(response.token);
-        setUserData(response.user);
+        setUserData(response.user); // <-- GUARDA el usuario
+        setAuthToken(response.token); // <-- GUARDA el token
         
         return response.user;
     } catch (error) {
@@ -44,12 +44,12 @@ export function removeAuthToken() {
 }
 
 export function getUserData() {
-    const userData = localStorage.getItem(USER_DATA_KEY);
-    return userData ? JSON.parse(userData) : null;
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
 }
 
 export function setUserData(user) {
-    localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+    localStorage.setItem('user', JSON.stringify(user));
 }
 
 export function removeUserData() {

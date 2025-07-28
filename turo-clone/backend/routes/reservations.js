@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Reservation from '../models/Reservation.js';
 import Vehicle from '../models/Vehicle.js';
 import User from '../models/User.js';
@@ -6,7 +7,7 @@ export default async function reservationRoutes(fastify, options) {
     // Crear una nueva reserva
     fastify.post('/api/reservations', { preValidation: [fastify.authenticate] }, async (request, reply) => {
         try {
-            const { vehicleId, startDate, endDate, pickupLocation, returnLocation, notes } = request.body;
+            const { vehicleId, startDate, endDate, pickupLocation, returnLocation, notes, completedDirectPay } = request.body;
             const guestId = request.user.id;
 
             // Verificar que el vehículo existe y está disponible
@@ -88,19 +89,27 @@ export default async function reservationRoutes(fastify, options) {
             const days = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
             const totalPrice = days * vehicle.pricePerDay;
 
+            // Define el status y paymentStatus según el flag
+            let status = 'pending';
+            let paymentStatus = 'pending';
+            if (completedDirectPay) {
+                status = 'completed';
+                paymentStatus = 'paid';
+            }
+
             // Crea la reserva usando el modelo de Mongoose
             const reservation = await Reservation.create({
                 guest: guestId,
-                host: vehicle.owner._id || vehicle.owner, // asegúrate de que owner sea un ObjectId
+                host: vehicle.owner._id || vehicle.owner,
                 vehicle: vehicle._id,
                 startDate,
                 endDate,
                 totalPrice,
-                status: 'pending',
+                status,
                 pickupLocation,
                 returnLocation,
                 notes: notes || '',
-                paymentStatus: 'pending'
+                paymentStatus
             });
 
             reply.send(reservation);
@@ -111,43 +120,24 @@ export default async function reservationRoutes(fastify, options) {
     });
 
     // Obtener reservas del usuario autenticado
-    fastify.get('/api/reservations', {
-        preValidation: [fastify.authenticate]
-    }, async (request, reply) => {
+    fastify.get('/api/reservations', { preValidation: [fastify.authenticate] }, async (request, reply) => {
         try {
-            const userId = request.user.id;
-            const { status, type } = request.query;
+            const userId = request.user.id || request.user.userId || request.user._id;
+            const userObjectId = new mongoose.Types.ObjectId(userId);
 
-            let query = {};
-            
-            // Filtrar por tipo (como huésped o como anfitrión)
-            if (type === 'guest') {
-                query.guest = userId;
-            } else if (type === 'host') {
-                query.host = userId;
-            } else {
-                // Por defecto, mostrar reservas donde el usuario es huésped o anfitrión
-                query.$or = [
-                    { guest: userId },
-                    { host: userId }
-                ];
-            }
+            console.log('Buscando reservas SOLO guest para usuario:', userId, userObjectId);
 
-            // Filtrar por estado
-            if (status && status !== 'all') {
-                query.status = status;
-            }
-
-            const reservations = await Reservation.find(query)
-                .populate('guest', 'name email')
-                .populate('host', 'name email')
-                .populate('vehicle', 'make model year pricePerDay location photos')
-                .sort({ createdAt: -1 });
+            const reservations = await Reservation.find({
+                guest: userObjectId
+            })
+            .populate('guest', 'name email')
+            .populate('host', 'name email')
+            .populate('vehicle')
+            .sort({ createdAt: -1 });
 
             reply.send(reservations);
         } catch (error) {
-            console.error(error);
-            reply.code(500).send({ error: error.message || 'Error al obtener las reservas' });
+            reply.code(500).send({ error: 'Error al obtener las reservas' });
         }
     });
 
