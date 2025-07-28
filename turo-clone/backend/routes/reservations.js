@@ -55,9 +55,9 @@ export default async function reservationRoutes(fastify, options) {
             }
 
             // Verificar disponibilidad general (otros usuarios)
-            const existingReservations = await Reservation.find({
+            const existingReservation = await Reservation.findOne({
                 vehicle: vehicleId,
-                status: { $in: ['confirmed', 'active'] },
+                paymentStatus: 'paid', // O status: 'confirmed', según tu lógica
                 $or: [
                     {
                         $and: [
@@ -80,8 +80,8 @@ export default async function reservationRoutes(fastify, options) {
                 ]
             });
 
-            if (existingReservations.length > 0) {
-                return reply.code(400).send({ error: 'El vehículo no está disponible en esas fechas' });
+            if (existingReservation) {
+                return reply.code(400).send({ error: 'El vehículo ya está reservado y pagado en esas fechas.' });
             }
 
             // Calcula el total
@@ -189,31 +189,33 @@ export default async function reservationRoutes(fastify, options) {
             const userId = request.user.id;
 
             const reservation = await Reservation.findById(id);
-            
+
             if (!reservation) {
                 return reply.code(404).send({ error: 'Reserva no encontrada' });
             }
 
-            // Solo el huésped puede cancelar la reserva
             if (reservation.guest.toString() !== userId) {
                 return reply.code(403).send({ error: 'Solo el huésped puede cancelar la reserva' });
             }
 
-            // No se puede cancelar una reserva ya iniciada o completada
-            if (['active', 'completed', 'cancelled'].includes(reservation.status)) {
-                return reply.code(400).send({ error: 'No se puede cancelar esta reserva' });
-            }
+            // Si quieres permitir cancelar cualquier reserva, comenta la siguiente validación:
+            // if (['active', 'completed', 'cancelled'].includes(reservation.status)) {
+            //     return reply.code(400).send({ error: 'No se puede cancelar esta reserva' });
+            // }
 
-            reservation.status = 'cancelled';
-            await reservation.save();
+            await Reservation.updateOne(
+                { _id: id },
+                { $set: { status: 'cancelled', updatedAt: Date.now() } }
+            );
 
-            await reservation.populate([
-                { path: 'guest', select: 'name email' },
-                { path: 'host', select: 'name email' },
-                { path: 'vehicle', select: 'make model year pricePerDay location photos' }
-            ]);
+            const updatedReservation = await Reservation.findById(id)
+                .populate([
+                    { path: 'guest', select: 'name email' },
+                    { path: 'host', select: 'name email' },
+                    { path: 'vehicle', select: 'make model year pricePerDay location photos' }
+                ]);
 
-            reply.send(reservation);
+            reply.send(updatedReservation);
         } catch (error) {
             fastify.log.error(error);
             reply.code(500).send({ error: 'Error al cancelar la reserva' });
@@ -344,6 +346,45 @@ export default async function reservationRoutes(fastify, options) {
         } catch (error) {
             fastify.log.error(error);
             reply.code(500).send({ error: 'Error al completar la reserva' });
+        }
+    });
+
+    fastify.post('/api/reservations/:id/cancel', { preValidation: [fastify.authenticate] }, async (request, reply) => {
+        const { id } = request.params;
+        const reservation = await Reservation.findById(id);
+        if (!reservation) return reply.code(404).send({ error: 'Reserva no encontrada' });
+        if (reservation.paymentStatus === 'paid') return reply.code(400).send({ error: 'No se puede cancelar una reserva pagada' });
+
+        reservation.status = 'cancelled';
+        // Salta validaciones al guardar
+        await reservation.save({ validateBeforeSave: false });
+
+        reply.send({ success: true });
+    });
+
+    fastify.delete('/api/reservations/:id', {
+        preValidation: [fastify.authenticate]
+    }, async (request, reply) => {
+        try {
+            const { id } = request.params;
+            const userId = request.user.id;
+
+            const reservation = await Reservation.findById(id);
+
+            if (!reservation) {
+                return reply.code(404).send({ error: 'Reserva no encontrada' });
+            }
+
+            if (reservation.guest.toString() !== userId) {
+                return reply.code(403).send({ error: 'Solo el huésped puede eliminar la reserva' });
+            }
+
+            await Reservation.deleteOne({ _id: id });
+
+            reply.send({ success: true });
+        } catch (error) {
+            fastify.log.error(error);
+            reply.code(500).send({ error: 'Error al eliminar la reserva' });
         }
     });
 }

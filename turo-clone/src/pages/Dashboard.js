@@ -77,18 +77,16 @@ export default class Dashboard {
             this.state.isLoadingReservations = true;
             const reservations = await getReservations();
             this.state.reservations = reservations || [];
-            
-            // Actualizar la vista si está en la pestaña de reservas
-            if (this.state.activeTab === 'reservations') {
-                this.refreshReservationsTab();
-            }
         } catch (error) {
             console.error('Error cargando reservas:', error);
             Notification.show('Error al cargar las reservas', 'error');
-            // En caso de error, mantener array vacío
             this.state.reservations = [];
         } finally {
             this.state.isLoadingReservations = false;
+            // SIEMPRE refresca la pestaña de reservas si está montada
+            if (this.contentContainer && this.state.activeTab === 'reservations') {
+                this.refreshReservationsTab();
+            }
         }
     }
 
@@ -354,7 +352,7 @@ export default class Dashboard {
             return container;
         }
         
-        // Renderizar vehículos con callbacks
+        // Renderizar vehículos with callbacks
         this.state.vehicles.forEach(vehicle => {
             const vehicleCard = new VehicleCard(vehicle, true, {
                 onEdit: (vehicle) => this.handleEditVehicle(vehicle),

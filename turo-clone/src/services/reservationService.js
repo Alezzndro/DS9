@@ -21,12 +21,14 @@ export async function getReservations(status = 'all') {
 }
 
 export async function cancelReservation(reservationId) {
-    try {
-        const response = await apiRequest(`/reservations/${reservationId}/cancel`, 'PATCH');
-        return response;
-    } catch (error) {
-        throw error;
-    }
+    const res = await fetch(`http://localhost:5000/api/reservations/${reservationId}/cancel`, {
+        method: 'PATCH',
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+    });
+    if (!res.ok) throw new Error('No se pudo cancelar la reserva');
+    return await res.json();
 }
 
 export async function completeReservation(reservationId, code) {

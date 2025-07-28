@@ -15,6 +15,7 @@ import authRoutes from './backend/routes/auth.js';
 import vehicleRoutes from './backend/routes/vehicles.js';
 import paymentRoutes from './backend/routes/payment.js';
 import reservationRoutes from './backend/routes/reservations.js';
+import stripeRoutes from './backend/routes/stripe.js'; // Importar rutas de Stripe
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,9 +27,10 @@ const start = async () => {
     try {
         // Configurar CORS
         await app.register(cors, {
-            origin: ['http://localhost:3000', 'http://localhost:5173'], // Puertos comunes para desarrollo
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization']
+            origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8080'], // Puertos comunes para desarrollo
+            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // <-- AGREGA PATCH AQUÍ
+            allowedHeaders: ['Content-Type', 'Authorization'],
+            credentials: true
         });
 
         // Configurar archivos estáticos para assets
@@ -61,6 +63,7 @@ const start = async () => {
                 }
                 
                 const token = authHeader.substring(7);
+                console.log('Token recibido:', token);
                 
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
                 
@@ -87,6 +90,7 @@ const start = async () => {
         await app.register(vehicleRoutes, { prefix: '/api/vehicles' });
         await app.register(paymentRoutes);
         await app.register(reservationRoutes);
+        await app.register(stripeRoutes); // Registrar rutas de Stripe
 
         // Ruta principal
         app.get('/', async (request, reply) => {

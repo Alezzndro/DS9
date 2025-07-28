@@ -23,8 +23,8 @@ export default async function stripeRoutes(fastify, options) {
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${process.env.FRONTEND_URL}/reservas?success=1`,
-            cancel_url: `${process.env.FRONTEND_URL}/reservas?cancel=1`,
+            success_url: `${process.env.FRONTEND_URL}/dashboard?success=1`,
+            cancel_url: `${process.env.FRONTEND_URL}/dashboard?cancel=1`,
             metadata: {
                 reservationId: reservation._id.toString(),
                 hostId: reservation.host.toString()

@@ -60,6 +60,18 @@ const reservationSchema = new Schema({
 // Middleware para actualizar updatedAt
 reservationSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
+
+    if (this.startDate >= this.endDate) {
+        return next(new Error('La fecha de inicio debe ser anterior a la fecha de fin'));
+    }
+    // Permitir guardar si se está cancelando, aunque la fecha sea pasada
+    if (
+        this.startDate < Date.now() &&
+        this.status !== 'cancelled'
+    ) {
+        return next(new Error('La fecha de inicio no puede ser en el pasado'));
+    }
+    // Si es cancelada, permitir guardar aunque la fecha sea pasada
     next();
 });
 
@@ -68,16 +80,5 @@ reservationSchema.index({ guest: 1, status: 1 });
 reservationSchema.index({ host: 1, status: 1 });
 reservationSchema.index({ vehicle: 1, startDate: 1, endDate: 1 });
 reservationSchema.index({ status: 1 });
-
-// Validación personalizada para fechas
-reservationSchema.pre('save', function(next) {
-    if (this.startDate >= this.endDate) {
-        next(new Error('La fecha de inicio debe ser anterior a la fecha de fin'));
-    }
-    if (this.startDate < new Date()) {
-        next(new Error('La fecha de inicio no puede ser en el pasado'));
-    }
-    next();
-});
 
 export default mongoose.model('Reservation', reservationSchema);

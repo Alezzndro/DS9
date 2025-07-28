@@ -1,5 +1,6 @@
 import { formatDate, formatCurrency } from '../../utils/helpers.js';
 import { cancelReservation } from '../../services/reservationService.js';
+import { startStripeCheckout } from '../../services/stripeService.js';
 import Notification from '../common/Notification.js';
 
 export default class ReservationCard {
@@ -64,30 +65,34 @@ export default class ReservationCard {
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
         const isGuest = this.reservation.guest._id === currentUser._id;
         const status = this.reservation.status;
+        const paymentStatus = this.reservation.paymentStatus;
 
+        let actions = '';
+
+        // Botón de pago solo para el huésped y si está pendiente
+        if (isGuest && paymentStatus === 'pending') {
+            actions += `<button class="btn btn-primary pay-now-btn" data-reservation-id="${this.reservation._id}">Pagar ahora</button>`;
+        } else if (isGuest && paymentStatus === 'paid') {
+            actions += `<span class="paid-label">Pago completado</span>`;
+        }
+
+        // Acciones de reserva según estado
         if (status === 'pending' && isGuest) {
-            return `
-                <button class="btn btn-outline cancel-btn" data-reservation-id="${this.reservation._id}">Cancelar</button>
-            `;
+            actions += `<button class="btn btn-outline cancel-btn" data-reservation-id="${this.reservation._id}">Cancelar</button>`;
         } else if (status === 'confirmed' && isGuest) {
-            return `
+            actions += `
                 <button class="btn btn-outline cancel-btn" data-reservation-id="${this.reservation._id}">Cancelar</button>
                 <button class="btn btn-primary start-btn" data-reservation-id="${this.reservation._id}">Iniciar reserva</button>
             `;
         } else if (status === 'confirmed' && !isGuest) {
-            return `
-                <button class="btn btn-primary confirm-btn" data-reservation-id="${this.reservation._id}">Confirmar reserva</button>
-            `;
+            actions += `<button class="btn btn-primary confirm-btn" data-reservation-id="${this.reservation._id}">Confirmar reserva</button>`;
         } else if (status === 'active' && isGuest) {
-            return `
-                <button class="btn btn-primary complete-btn" data-reservation-id="${this.reservation._id}">Completar reserva</button>
-            `;
+            actions += `<button class="btn btn-primary complete-btn" data-reservation-id="${this.reservation._id}">Completar reserva</button>`;
         } else if (status === 'completed') {
-            return `
-                <button class="btn btn-outline review-btn" data-reservation-id="${this.reservation._id}">Dejar reseña</button>
-            `;
+            actions += `<button class="btn btn-outline review-btn" data-reservation-id="${this.reservation._id}">Dejar reseña</button>`;
         }
-        return '';
+
+        return actions;
     }
 
     render() {
@@ -121,6 +126,31 @@ export default class ReservationCard {
         
         // Agregar event listeners para los botones de acción
         this.attachEventListeners(card);
+
+        if (this.reservation.paymentStatus === 'pending') {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.style.display = 'flex';
+            actionsDiv.style.gap = '8px';
+
+            const payBtn = document.createElement('button');
+            payBtn.textContent = 'Pagar ahora';
+            payBtn.className = 'pay-now-btn';
+            payBtn.onclick = () => startStripeCheckout(this.reservation._id);
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancelar';
+            cancelBtn.className = 'cancel-btn btn btn-danger';
+            cancelBtn.onclick = () => this.handleCancel();
+
+            actionsDiv.appendChild(payBtn);
+            actionsDiv.appendChild(cancelBtn);
+            card.appendChild(actionsDiv);
+        } else if (this.reservation.paymentStatus === 'paid') {
+            const paidLabel = document.createElement('span');
+            paidLabel.textContent = 'Pago completado';
+            paidLabel.className = 'paid-label';
+            card.appendChild(paidLabel);
+        }
         
         return card;
     }
@@ -150,19 +180,24 @@ export default class ReservationCard {
         if (confirmBtn) {
             confirmBtn.addEventListener('click', () => this.handleConfirm());
         }
+
+        const payNowBtn = card.querySelector('.pay-now-btn');
+        if (payNowBtn) {
+            payNowBtn.addEventListener('click', () => startStripeCheckout(this.reservation._id));
+        }
     }
 
     async handleCancel() {
         if (confirm('¿Estás seguro de que quieres cancelar esta reserva?')) {
             try {
                 await cancelReservation(this.reservation._id);
-                Notification.show('Reserva cancelada exitosamente', 'success');
+                new Notification('Reserva cancelada exitosamente', 'success');
                 if (this.onUpdate) {
                     this.onUpdate();
                 }
             } catch (error) {
                 console.error('Error al cancelar reserva:', error);
-                Notification.show('Error al cancelar la reserva', 'error');
+                new Notification('Error al cancelar la reserva', 'error');
             }
         }
     }

@@ -20,18 +20,25 @@ export default async function webhookRoutes(fastify, options) {
             const hostId = session.metadata.hostId;
             const amount = session.amount_total / 100;
 
+            console.log('Webhook recibido para reserva:', reservationId);
+
             // 1. Actualizar reserva
             const reservation = await Reservation.findById(reservationId);
             if (reservation) {
                 reservation.paymentStatus = 'paid';
+                reservation.status = 'confirmed'; // Opcional, si usas este campo
                 await reservation.save();
+                console.log('Reserva actualizada:', reservation._id);
 
                 // 2. Sumar al balance del dueño
                 const owner = await User.findById(hostId);
                 if (owner) {
                     owner.balance = (owner.balance || 0) + amount;
                     await owner.save();
+                    console.log('Balance actualizado para dueño:', owner._id, 'Nuevo balance:', owner.balance);
                 }
+            } else {
+                console.log('Reserva no encontrada:', reservationId);
             }
         }
 
