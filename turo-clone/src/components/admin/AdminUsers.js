@@ -54,7 +54,12 @@ export default class AdminUsers {
             }
         } catch (error) {
             console.error('Error loading users:', error);
-            this.loadMockData(); // Fallback a datos de ejemplo
+            console.error('API Error details:', error.message);
+            
+            // Si hay error, mostrar lista vacía en lugar de datos de ejemplo
+            this.users = [];
+            this.filteredUsers = [];
+            this.totalPages = 1;
         } finally {
             this.loading = false;
             this.renderTable();

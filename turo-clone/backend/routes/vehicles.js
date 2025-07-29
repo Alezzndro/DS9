@@ -268,10 +268,10 @@ export default async function vehicleRoutes(fastify, options) {
             
             console.log('🔍 Búsqueda de vehículos con parámetros:', request.query);
             
-            // Construir filtros - Solo filtrar por disponibilidad por ahora
+            // Construir filtros - Solo mostrar vehículos aprobados y disponibles
             const filters = {
-                isAvailable: true
-                // Removemos temporalmente isVerified: true para ver todos los vehículos
+                status: 'approved',  // Solo vehículos aprobados por el admin
+                isAvailable: true    // Solo vehículos disponibles
             };
             
             if (city) filters['location.city'] = new RegExp(city, 'i');

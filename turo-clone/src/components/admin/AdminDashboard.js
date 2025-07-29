@@ -37,40 +37,59 @@ export default class AdminDashboard {
                 throw new Error('No authentication token available');
             }
             
+            console.log('📊 Loading dashboard data...');
             const response = await adminApiService.getDashboardData();
             
+            console.log('📊 Dashboard API Response:', response);
+            
             if (response.success) {
+                console.log('📈 Stats received:', response.data.stats);
+                console.log('🚗 Pending vehicles count:', response.data.stats.pendingVehicles);
+                console.log('📋 All dashboard stats:', {
+                    totalUsers: response.data.stats.totalUsers,
+                    totalVehicles: response.data.stats.totalVehicles,
+                    pendingVehicles: response.data.stats.pendingVehicles,
+                    pendingDocuments: response.data.stats.pendingDocuments,
+                    activeReservations: response.data.stats.activeReservations,
+                    totalRevenue: response.data.stats.totalRevenue
+                });
+                
                 this.stats = response.data.stats;
                 this.recentActivity = response.data.recentActivity;
                 this.retryCount = 0; // Reset retry count on success
+                
+                console.log('✅ Dashboard data loaded successfully');
+                console.log('🎯 Final stats object:', this.stats);
             } else {
                 throw new Error(response.message || 'Failed to load dashboard data');
             }
         } catch (error) {
             console.error('Error loading dashboard data:', error);
+            console.error('API Error details:', error.message);
             
-            // Solo usar datos de ejemplo si hemos agotado los reintentos
-            if (this.retryCount >= this.maxRetries) {
-                console.warn('Using fallback data after max retries');
-                this.stats = {
-                    totalUsers: 1247,
-                    totalVehicles: 324,
-                    activeReservations: 89,
-                    totalRevenue: 125430,
-                    pendingDocuments: 12,
-                    pendingVehicles: 8
-                };
-            } else {
-                // Intentar de nuevo
+            // Intentar de nuevo si no hemos agotado los reintentos
+            if (this.retryCount < this.maxRetries) {
                 this.retryCount++;
+                console.log(`🔄 Retry attempt ${this.retryCount}/${this.maxRetries}`);
                 setTimeout(() => this.loadDashboardData(), 500 * this.retryCount);
                 return;
             }
+            
+            // Si agotamos los reintentos, mostrar error pero con datos mínimos reales
+            console.error('❌ Max retries reached. Check server connection.');
+            this.stats = {
+                totalUsers: 0,
+                totalVehicles: 0,
+                activeReservations: 0,
+                totalRevenue: 0,
+                pendingDocuments: 0,
+                pendingVehicles: 0
+            };
         } finally {
             this.loading = false;
             // Re-renderizar después de cargar los datos
             if (this.container) {
-                this.updateStats();
+                this.rerenderDashboard();
             }
         }
     }
@@ -147,6 +166,10 @@ export default class AdminDashboard {
             `;
             return actionsContainer;
         }
+        
+        console.log('🎯 Rendering pending actions with stats:', this.stats);
+        console.log('🚗 Pending vehicles for display:', this.stats.pendingVehicles);
+        console.log('📋 Pending documents for display:', this.stats.pendingDocuments);
         
         actionsContainer.innerHTML = `
             <h3>Acciones Pendientes</h3>
@@ -336,9 +359,28 @@ export default class AdminDashboard {
         
         dashboard.innerHTML = `
             <div class="dashboard-header">
-                <h1>Dashboard</h1>
-                <p>Resumen general de la plataforma</p>
+                <div class="dashboard-title">
+                    <h1>Dashboard</h1>
+                    <p>Resumen general de la plataforma</p>
+                </div>
             </div>
+            <style>
+                .dashboard-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 2rem;
+                }
+                .dashboard-title h1 {
+                    margin: 0;
+                    font-size: 2rem;
+                    color: #1f2937;
+                }
+                .dashboard-title p {
+                    margin: 0.5rem 0 0 0;
+                    color: #6b7280;
+                }
+            </style>
         `;
         
         dashboard.appendChild(this.renderStatsCards());
@@ -356,6 +398,30 @@ export default class AdminDashboard {
         this.container = dashboard;
         
         return dashboard;
+    }
+
+    rerenderDashboard() {
+        if (!this.container) return;
+        
+        // Limpiar contenido actual
+        const statsGrid = this.container.querySelector('.stats-grid');
+        const pendingActions = this.container.querySelector('.pending-actions');
+        const contentGrid = this.container.querySelector('.dashboard-content-grid');
+        
+        if (statsGrid) {
+            statsGrid.replaceWith(this.renderStatsCards());
+        }
+        
+        if (pendingActions) {
+            pendingActions.replaceWith(this.renderPendingActions());
+        }
+        
+        if (contentGrid) {
+            // Actualizar contenido del grid
+            contentGrid.innerHTML = '';
+            contentGrid.appendChild(this.renderRecentActivity());
+            contentGrid.appendChild(this.renderCharts());
+        }
     }
 
     updateStats() {

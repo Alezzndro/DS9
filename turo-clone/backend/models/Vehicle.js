@@ -152,6 +152,11 @@ const vehicleSchema = new mongoose.Schema({
     },
     
     // Estado y disponibilidad
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected', 'suspended'],
+        default: 'pending'
+    },
     isAvailable: {
         type: Boolean,
         default: true

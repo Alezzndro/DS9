@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL } from '../utils/constants.js';
 
 class AdminApiService {
     constructor() {
@@ -16,11 +16,13 @@ class AdminApiService {
     async makeRequest(url, options = {}) {
         try {
             const token = localStorage.getItem('turo_clone_auth_token');
-            // Debug solo si hay problemas
             if (!token) {
-                console.warn('No auth token found for admin API request');
+                console.warn('⚠️ No auth token found for admin API request');
+                throw new Error('No authentication token available');
             }
 
+            console.log(`🔗 Making API request to: ${API_BASE_URL}${url}`);
+            
             const response = await fetch(`${API_BASE_URL}${url}`, {
                 ...options,
                 headers: {
@@ -29,18 +31,22 @@ class AdminApiService {
                 }
             });
 
+            console.log(`📡 API Response status: ${response.status} ${response.statusText}`);
+
             const data = await response.json();
 
             if (!response.ok) {
                 console.error('❌ API Error Response:', data);
-                throw new Error(data.message || 'Error en la petición');
+                throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
             }
 
+            console.log('✅ API Request successful:', { url, dataReceived: !!data });
             return data;
         } catch (error) {
             console.error('🚨 API Request Failed:', {
-                url,
-                error: error.message
+                url: `${API_BASE_URL}${url}`,
+                error: error.message,
+                type: error.name
             });
             throw error;
         }
@@ -128,6 +134,26 @@ class AdminApiService {
             method: 'PATCH',
             body: JSON.stringify({ status })
         });
+    }
+
+    async updateVehicle(vehicleId, vehicleData) {
+        console.log('🔄 AdminApiService: Actualizando vehículo', vehicleId, vehicleData);
+        const response = await this.makeRequest(`/admin/vehicles/${vehicleId}`, {
+            method: 'PUT',
+            body: JSON.stringify(vehicleData)
+        });
+        console.log('📡 AdminApiService: Respuesta actualizar vehículo', response);
+        return response;
+    }
+
+    async createVehicle(vehicleData) {
+        console.log('🔄 AdminApiService: Creando vehículo', vehicleData);
+        const response = await this.makeRequest('/admin/vehicles', {
+            method: 'POST',
+            body: JSON.stringify(vehicleData)
+        });
+        console.log('📡 AdminApiService: Respuesta crear vehículo', response);
+        return response;
     }
 
     async deleteVehicle(vehicleId) {
