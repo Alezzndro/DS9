@@ -98,9 +98,42 @@ export default class VehicleCard {
         // Manejar disponibilidad
         const isAvailable = this.vehicle.isAvailable !== undefined ? this.vehicle.isAvailable : this.vehicle.available;
         
+        // Carrusel de imágenes
+        let images = this.vehicle.images && this.vehicle.images.length > 0
+            ? this.vehicle.images.map(img => img.url)
+            : [this.vehicle.image || '/assets/css/placeholder-car.svg'];
+
+        // Estado del carrusel
+        let currentIndex = 0;
+        const updateCarousel = () => {
+            const imgEl = card.querySelector('.vehicle-carousel-img');
+            if (imgEl) {
+                imgEl.style.opacity = 0;
+                setTimeout(() => {
+                    imgEl.src = images[currentIndex];
+                    imgEl.style.opacity = 1;
+                }, 150);
+            }
+            const counter = card.querySelector('.vehicle-carousel-counter');
+            if (counter) {
+                counter.textContent = `${currentIndex + 1} / ${images.length}`;
+            }
+            // Actualizar dots
+            const dots = card.querySelectorAll('.carousel-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentIndex);
+            });
+        };
+
         card.innerHTML = `
             <div class="vehicle-image">
-                <img src="${this.vehicle.image || this.vehicle.images?.[0] || 'https://via.placeholder.com/300'}" alt="${this.vehicle.make} ${this.vehicle.model}">
+                <button class="carousel-arrow left" style="${images.length > 1 ? '' : 'display:none'}" aria-label="Anterior"><span>&#10094;</span></button>
+                <img class="vehicle-carousel-img" src="${images[0]}" alt="${this.vehicle.make} ${this.vehicle.model}" onerror="this.src='/assets/css/placeholder-car.svg'" style="transition: opacity 0.3s; opacity:1;">
+                <button class="carousel-arrow right" style="${images.length > 1 ? '' : 'display:none'}" aria-label="Siguiente"><span>&#10095;</span></button>
+                <div class="vehicle-carousel-counter" style="${images.length > 1 ? '' : 'display:none'}">1 / ${images.length}</div>
+                <div class="carousel-dots" style="${images.length > 1 ? '' : 'display:none'}">
+                    ${images.map((_, i) => `<span class="carousel-dot${i === 0 ? ' active' : ''}"></span>`).join('')}
+                </div>
                 ${isAvailable ? '<span class="badge available">Disponible</span>' : '<span class="badge unavailable">No disponible</span>'}
             </div>
             <div class="vehicle-info">
@@ -113,6 +146,35 @@ export default class VehicleCard {
             ${this.renderOwnerActions()}
             ${this.renderRenterActions()}
         `;
+
+        // Agregar listeners para flechas
+        setTimeout(() => {
+            const leftBtn = card.querySelector('.carousel-arrow.left');
+            const rightBtn = card.querySelector('.carousel-arrow.right');
+            const dots = card.querySelectorAll('.carousel-dot');
+            if (leftBtn) {
+                leftBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    currentIndex = (currentIndex - 1 + images.length) % images.length;
+                    updateCarousel();
+                });
+            }
+            if (rightBtn) {
+                rightBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    currentIndex = (currentIndex + 1) % images.length;
+                    updateCarousel();
+                });
+            }
+            // Dots interaction
+            dots.forEach((dot, i) => {
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    currentIndex = i;
+                    updateCarousel();
+                });
+            });
+        }, 0);
         
         // Event listeners
         if (this.isOwner) {

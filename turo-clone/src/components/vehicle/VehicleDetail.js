@@ -59,9 +59,14 @@ export default class VehicleDetail {
             this.vehicle.ownerEmail = '';
         }
 
-        // Manejar imágenes
+        // Manejar imágenes (aceptar array de objetos o de strings)
         if (!this.vehicle.images || this.vehicle.images.length === 0) {
             this.vehicle.images = [this.vehicle.image || 'https://via.placeholder.com/600x400?text=Sin+imagen'];
+        } else {
+            // Si es array de objetos, extraer url
+            if (typeof this.vehicle.images[0] === 'object' && this.vehicle.images[0] !== null && 'url' in this.vehicle.images[0]) {
+                this.vehicle.images = this.vehicle.images.map(img => img.url);
+            }
         }
 
         // Manejar disponibilidad

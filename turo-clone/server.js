@@ -1,6 +1,7 @@
 import fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
+import multipart from '@fastify/multipart';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -34,6 +35,24 @@ const start = async () => {
             credentials: true
         });
 
+        // Configurar multipart para subida de archivos
+        await app.register(multipart, {
+            limits: {
+                fieldNameSize: 100,
+                fieldSize: 100,
+                fields: 10,
+                fileSize: 10 * 1024 * 1024, // 10MB
+                files: 5
+            }
+        });
+
+        // Configurar archivos estáticos para uploads
+        await app.register(fastifyStatic, {
+            root: path.join(__dirname, 'public', 'uploads'),
+            prefix: '/uploads/',
+            decorateReply: false
+        });
+
         // Configurar archivos estáticos para assets
         await app.register(fastifyStatic, {
             root: path.join(__dirname, 'public', 'assets'),
@@ -54,9 +73,12 @@ const start = async () => {
         // Middleware para verificar autenticación
         app.decorate('authenticate', async (request, reply) => {
             try {
+                console.log('🔐 Verificando autenticación para:', request.method, request.url);
                 const authHeader = request.headers.authorization;
+                console.log('📋 Auth header:', authHeader ? `${authHeader.substring(0, 20)}...` : 'NO HEADER');
                 
                 if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                    console.log('❌ Token no proporcionado o formato incorrecto');
                     return reply.code(401).send({
                         success: false,
                         message: 'Token de acceso requerido'
@@ -64,21 +86,25 @@ const start = async () => {
                 }
                 
                 const token = authHeader.substring(7);
-                console.log('Token recibido:', token);
+                console.log('🔑 Token extraído:', token.substring(0, 20) + '...');
                 
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
+                console.log('✅ Token decodificado - User ID:', decoded.userId);
                 
                 const user = await User.findById(decoded.userId);
                 if (!user) {
+                    console.log('❌ Usuario no encontrado en BD:', decoded.userId);
                     return reply.code(401).send({
                         success: false,
                         message: 'Usuario no encontrado'
                     });
                 }
                 
+                console.log('👤 Usuario autenticado:', user.email);
                 request.user = user;
                 
             } catch (error) {
+                console.log('❌ Error en autenticación:', error.message);
                 return reply.code(401).send({
                     success: false,
                     message: 'Token inválido'

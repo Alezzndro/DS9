@@ -1,4 +1,10 @@
 import Vehicle from '../models/Vehicle.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default async function vehicleRoutes(fastify, options) {
     
@@ -346,6 +352,213 @@ export default async function vehicleRoutes(fastify, options) {
             
         } catch (error) {
             console.error('Error obteniendo todos los vehículos:', error);
+            reply.code(500).send({
+                success: false,
+                message: 'Error interno del servidor'
+            });
+        }
+    });
+
+    // Subir imágenes de vehículo
+    fastify.post('/:id/images', { preHandler: fastify.authenticate }, async (request, reply) => {
+        try {
+            console.log('🔄 Iniciando subida de imagen...');
+            const vehicleId = request.params.id;
+            console.log('🆔 Vehicle ID:', vehicleId);
+            console.log('👤 User ID:', request.user._id);
+            
+            // Verificar que el vehículo existe y pertenece al usuario
+            const vehicle = await Vehicle.findOne({
+                _id: vehicleId,
+                owner: request.user._id
+            });
+            
+            console.log('🚗 Vehículo encontrado:', !!vehicle);
+            
+            if (!vehicle) {
+                console.log('❌ Vehículo no encontrado');
+                return reply.code(404).send({
+                    success: false,
+                    message: 'Vehículo no encontrado'
+                });
+            }
+            
+            console.log('📁 Obteniendo archivo...');
+            const data = await request.file();
+            console.log('📄 Archivo recibido:', !!data, data?.filename, data?.mimetype);
+            
+            if (!data) {
+                console.log('❌ No se proporcionó archivo');
+                return reply.code(400).send({
+                    success: false,
+                    message: 'No se proporcionó ningún archivo'
+                });
+            }
+            
+            // Validar tipo de archivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+            console.log('🔍 Validando tipo de archivo:', data.mimetype);
+            if (!allowedTypes.includes(data.mimetype)) {
+                console.log('❌ Tipo de archivo no permitido');
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Tipo de archivo no permitido. Solo se aceptan: JPG, PNG, WEBP'
+                });
+            }
+            
+            // Crear nombre único para el archivo
+            const timestamp = Date.now();
+            const extension = path.extname(data.filename);
+            const filename = `vehicle_${vehicleId}_${timestamp}${extension}`;
+            const uploadPath = path.join(__dirname, '../../public/uploads/vehicles', filename);
+            
+            console.log('💾 Guardando archivo en:', uploadPath);
+            
+            // Asegurar que el directorio existe
+            const uploadDir = path.dirname(uploadPath);
+            if (!fs.existsSync(uploadDir)) {
+                console.log('📁 Creando directorio:', uploadDir);
+                fs.mkdirSync(uploadDir, { recursive: true });
+            }
+            
+            // Guardar archivo
+            console.log('📤 Convirtiendo a buffer...');
+            const buffer = await data.toBuffer();
+            console.log('💾 Escribiendo archivo...');
+            fs.writeFileSync(uploadPath, buffer);
+            console.log('✅ Archivo guardado exitosamente');
+            
+            // Crear URL de acceso
+            const imageUrl = `/uploads/vehicles/${filename}`;
+            
+            // Determinar si es la imagen principal
+            const isPrimary = vehicle.images.length === 0;
+            
+            // Agregar imagen al vehículo
+            vehicle.images.push({
+                url: imageUrl,
+                isPrimary: isPrimary
+            });
+            
+            await vehicle.save();
+            
+            reply.send({
+                success: true,
+                message: 'Imagen subida exitosamente',
+                imageUrl: imageUrl,
+                isPrimary: isPrimary
+            });
+            
+        } catch (error) {
+            console.error('Error subiendo imagen:', error);
+            reply.code(500).send({
+                success: false,
+                message: 'Error interno del servidor'
+            });
+        }
+    });
+
+    // Eliminar imagen de vehículo
+    fastify.delete('/:id/images/:imageIndex', { preHandler: fastify.authenticate }, async (request, reply) => {
+        try {
+            const vehicleId = request.params.id;
+            const imageIndex = parseInt(request.params.imageIndex);
+            
+            // Verificar que el vehículo existe y pertenece al usuario
+            const vehicle = await Vehicle.findOne({
+                _id: vehicleId,
+                owner: request.user._id
+            });
+            
+            if (!vehicle) {
+                return reply.code(404).send({
+                    success: false,
+                    message: 'Vehículo no encontrado'
+                });
+            }
+            
+            if (imageIndex < 0 || imageIndex >= vehicle.images.length) {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Índice de imagen inválido'
+                });
+            }
+            
+            const imageToDelete = vehicle.images[imageIndex];
+            
+            // Eliminar archivo físico
+            const imagePath = path.join(__dirname, '../../public', imageToDelete.url);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+            
+            // Eliminar de la base de datos
+            vehicle.images.splice(imageIndex, 1);
+            
+            // Si era la imagen principal y quedan imágenes, hacer la primera como principal
+            if (imageToDelete.isPrimary && vehicle.images.length > 0) {
+                vehicle.images[0].isPrimary = true;
+            }
+            
+            await vehicle.save();
+            
+            reply.send({
+                success: true,
+                message: 'Imagen eliminada exitosamente'
+            });
+            
+        } catch (error) {
+            console.error('Error eliminando imagen:', error);
+            reply.code(500).send({
+                success: false,
+                message: 'Error interno del servidor'
+            });
+        }
+    });
+
+    // Establecer imagen principal
+    fastify.patch('/:id/images/:imageIndex/primary', { preHandler: fastify.authenticate }, async (request, reply) => {
+        try {
+            const vehicleId = request.params.id;
+            const imageIndex = parseInt(request.params.imageIndex);
+            
+            // Verificar que el vehículo existe y pertenece al usuario
+            const vehicle = await Vehicle.findOne({
+                _id: vehicleId,
+                owner: request.user._id
+            });
+            
+            if (!vehicle) {
+                return reply.code(404).send({
+                    success: false,
+                    message: 'Vehículo no encontrado'
+                });
+            }
+            
+            if (imageIndex < 0 || imageIndex >= vehicle.images.length) {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Índice de imagen inválido'
+                });
+            }
+            
+            // Quitar el flag de principal de todas las imágenes
+            vehicle.images.forEach(img => {
+                img.isPrimary = false;
+            });
+            
+            // Establecer la nueva imagen principal
+            vehicle.images[imageIndex].isPrimary = true;
+            
+            await vehicle.save();
+            
+            reply.send({
+                success: true,
+                message: 'Imagen principal actualizada'
+            });
+            
+        } catch (error) {
+            console.error('Error actualizando imagen principal:', error);
             reply.code(500).send({
                 success: false,
                 message: 'Error interno del servidor'

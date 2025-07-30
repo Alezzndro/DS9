@@ -34,7 +34,7 @@ export async function cancelReservation(reservationId) {
     const res = await fetch(`http://localhost:5000/api/reservations/${reservationId}/cancel`, {
         method: 'PATCH',
         headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('token')
+            'Authorization': 'Bearer ' + localStorage.getItem('turo-clone_auth_token')
         }
     });
     if (!res.ok) throw new Error('No se pudo cancelar la reserva');

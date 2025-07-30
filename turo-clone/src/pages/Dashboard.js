@@ -123,10 +123,10 @@ export default class Dashboard {
 
     handleAddVehicle() {
         try {
-            const vehicleForm = new VehicleForm(null, (newVehicle) => {
-                // Actualizar la lista de vehículos
-                this.state.vehicles.push(newVehicle);
-                this.refreshVehiclesTab();
+            const vehicleForm = new VehicleForm(null, async (result) => {
+                console.log('🚗 Nuevo vehículo creado:', result);
+                // Recargar todos los vehículos para obtener la información actualizada
+                await this.loadUserVehicles();
             });
             
             document.body.appendChild(vehicleForm.render());
@@ -137,13 +137,10 @@ export default class Dashboard {
     }
 
     async handleEditVehicle(vehicle) {
-        const vehicleForm = new VehicleForm(vehicle, (updatedVehicle) => {
-            // Actualizar el vehículo en la lista
-            const index = this.state.vehicles.findIndex(v => v._id === updatedVehicle._id);
-            if (index !== -1) {
-                this.state.vehicles[index] = updatedVehicle;
-                this.refreshVehiclesTab();
-            }
+        const vehicleForm = new VehicleForm(vehicle, async (result) => {
+            console.log('✏️ Vehículo editado:', result);
+            // Recargar todos los vehículos para obtener la información actualizada
+            await this.loadUserVehicles();
         });
         
         document.body.appendChild(vehicleForm.render());
