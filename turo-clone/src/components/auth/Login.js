@@ -55,7 +55,7 @@ export default class LoginPage {
                     if (user.role === 'admin') {
                         window.history.pushState({}, '', '/admin');
                     } else {
-                        window.history.pushState({}, '', '/dashboard');
+                        window.history.pushState({}, '', '/');
                     }
                     window.dispatchEvent(new PopStateEvent('popstate'));
                 }, 1500);

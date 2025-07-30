@@ -53,7 +53,7 @@ export default class Header {
             header.innerHTML = `
                 <div class="container">
                     <nav>
-                        <a href="/dashboard" class="logo" data-link>RideShare</a>
+                        <a href="/" class="logo" data-link>RideShare</a>
                         <div class="nav-links">
                             <a href="/search" data-link>Buscar vehículos</a>
                             <a href="/dashboard" data-link>Mi Dashboard</a>

@@ -235,6 +235,21 @@
     text-align: center;
 }
 
+/* Centrar el botón cuando hay solo uno (para el caso de DETALLES) */
+.vehicle-actions:has(.btn:only-child) {
+    justify-content: center;
+}
+
+/* Fallback para navegadores sin soporte :has() */
+.vehicle-actions.single-action {
+    justify-content: center;
+}
+
+.vehicle-actions.single-action .btn {
+    flex: none;
+    min-width: 120px;
+}
+
 /* Para pantallas pequeñas, apilar los botones */
 @media (max-width: 480px) {
     .vehicle-actions {

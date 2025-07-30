@@ -100,7 +100,17 @@ export default class App {
         const PageClass = this.routes[path] || this.routes['/404'];
 
         const appContainer = document.getElementById('app');
+        
+        // Limpiar completamente el contenedor para evitar duplicación
         appContainer.innerHTML = '';
+        
+        // Remover cualquier instancia duplicada de las clases específicas
+        const existingAuth = document.querySelectorAll('.login-page, .register-page');
+        existingAuth.forEach(element => {
+            if (element.parentNode !== appContainer) {
+                element.remove();
+            }
+        });
 
         const pageInstance = new PageClass();
         appContainer.appendChild(pageInstance.render());
