@@ -1,7 +1,7 @@
 import { apiRequest } from './api.js';
 
-const AUTH_TOKEN_KEY = 'turo_clone_auth_token';
-const USER_DATA_KEY = 'turo_clone_user_data';
+const AUTH_TOKEN_KEY = 'turo-clone_auth_token';
+const USER_DATA_KEY = 'turo-clone_user_data';
 
 export async function register(userData) {
     try {

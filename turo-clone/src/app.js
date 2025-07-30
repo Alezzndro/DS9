@@ -47,7 +47,7 @@ export default class App {
 
     async checkAuthentication() {
         const currentPath = window.location.pathname;
-        const token = localStorage.getItem('turo_clone_auth_token');
+        const token = localStorage.getItem('turo-clone_auth_token');
         
         // Si no hay token y está en rutas protegidas, redirigir al login
         if (!token && (currentPath.startsWith('/dashboard') || currentPath.startsWith('/admin'))) {
@@ -63,8 +63,8 @@ export default class App {
                 
                 if (!isAuthenticated) {
                     // Token inválido, limpiar y redirigir al login
-                    localStorage.removeItem('turo_clone_auth_token');
-                    localStorage.removeItem('turo_clone_user_data');
+                    localStorage.removeItem('turo-clone_auth_token');
+                    localStorage.removeItem('turo-clone_user_data');
                     if (currentPath.startsWith('/dashboard') || currentPath.startsWith('/admin')) {
                         navigateTo('/login');
                         return;
@@ -85,8 +85,8 @@ export default class App {
             } catch (error) {
                 console.error('Error verificando autenticación:', error);
                 // En caso de error, limpiar y redirigir si es necesario
-                localStorage.removeItem('turo_clone_auth_token');
-                localStorage.removeItem('turo_clone_user_data');
+                localStorage.removeItem('turo-clone_auth_token');
+                localStorage.removeItem('turo-clone_user_data');
                 if (currentPath.startsWith('/dashboard') || currentPath.startsWith('/admin')) {
                     navigateTo('/login');
                     return;

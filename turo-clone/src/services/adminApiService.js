@@ -6,7 +6,7 @@ class AdminApiService {
     }
 
     getAuthHeaders() {
-        const token = localStorage.getItem('turo_clone_auth_token'); // Obtener token dinámicamente
+        const token = localStorage.getItem('turo-clone_auth_token'); // Obtener token dinámicamente
         return {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -15,7 +15,7 @@ class AdminApiService {
 
     async makeRequest(url, options = {}) {
         try {
-            const token = localStorage.getItem('turo_clone_auth_token');
+            const token = localStorage.getItem('turo-clone_auth_token');
             if (!token) {
                 console.warn('⚠️ No auth token found for admin API request');
                 throw new Error('No authentication token available');

@@ -19,7 +19,7 @@ export default class Home {
             <div class="hero-buttons">
                 <a href="/search" class="btn btn-primary" data-link>Explorar vehículos</a>
                 <a href="/login" class="btn btn-outline" id="loginBtn" data-link>Iniciar sesión</a>
-                <a href="/register" class="btn btn-outline" id="registerBtn" data-link>Iniciar sesión</a>
+                <a href="/register" class="btn btn-outline" id="registerBtn" data-link>Registrarse</a>
             </div>
         </div>
     `;

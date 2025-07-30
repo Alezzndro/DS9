@@ -7,7 +7,7 @@ export default class Header {
     }
 
     checkAuthStatus() {
-        const token = localStorage.getItem('turo_clone_auth_token');
+        const token = localStorage.getItem('turo-clone_auth_token');
         return !!token;
     }
 
@@ -24,7 +24,7 @@ export default class Header {
     handleLogout() {
         try {
             // Limpiar localStorage usando las mismas claves que authService
-            localStorage.removeItem('turo_clone_auth_token');
+            localStorage.removeItem('turo-clone_auth_token');
             localStorage.removeItem('user'); // Usar la clave correcta
             
             // Mostrar notificación

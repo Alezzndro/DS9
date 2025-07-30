@@ -26,7 +26,7 @@ export default class AdminDashboard {
             this.loading = true;
             
             // Verificar que tenemos un token de autenticación
-            const token = localStorage.getItem('turo_clone_auth_token');
+            const token = localStorage.getItem('turo-clone_auth_token');
             if (!token) {
                 console.warn('No auth token found, retrying...');
                 if (this.retryCount < this.maxRetries) {

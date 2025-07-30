@@ -37,7 +37,7 @@ export default async function adminRoutes(fastify, options) {
                 User.find().sort({ createdAt: -1 }).limit(5).select('firstName lastName email createdAt'),
                 Reservation.find().sort({ createdAt: -1 }).limit(5)
                     .populate('vehicle', 'make model')
-                    .populate('user', 'firstName lastName')
+                    .populate('guest', 'firstName lastName')
             ]);
 
             // Conteo manual confiable de vehículos pendientes
@@ -45,7 +45,7 @@ export default async function adminRoutes(fastify, options) {
 
             // Calcular ingresos totales
             const reservations = await Reservation.find({ status: 'completed' });
-            const totalRevenue = reservations.reduce((sum, reservation) => sum + reservation.totalAmount, 0);
+            const totalRevenue = reservations.reduce((sum, reservation) => sum + reservation.totalPrice, 0);
 
             console.log('📊 Dashboard data generated:', {
                 totalUsers,

@@ -78,7 +78,6 @@ export default class Register {
                 setTimeout(() => {
                     window.history.pushState({}, '', '/login');
                     window.dispatchEvent(new PopStateEvent('popstate'));
-                    document.body.removeChild(this.modal);
                 }, 2000);
                 
             } catch (error) {
@@ -92,25 +91,24 @@ export default class Register {
     updateForm() {
         // Actualizar mensajes de error
         Object.keys(this.state.errors).forEach(key => {
-            const errorElement = this.modal.querySelector(`.error-${key}`);
+            const errorElement = this.container.querySelector(`.error-${key}`);
             if (errorElement) {
                 errorElement.textContent = this.state.errors[key] || '';
             }
         });
         // Mostrar error general si existe
-        const generalError = this.modal.querySelector('.error-general');
+        const generalError = this.container.querySelector('.error-general');
         if (generalError) {
             generalError.textContent = this.state.errors.general || '';
         }
     }
 
     render() {
-        this.modal = document.createElement('div');
-        this.modal.className = 'modal';
-        this.modal.innerHTML = `
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>Regístrate</h2>
+        this.container = document.createElement('div');
+        this.container.className = 'register-page';
+        this.container.innerHTML = `
+            <div class="register-form-container">
+                <h2>Crear Cuenta</h2>
                 <form id="registerForm">
                     <div class="form-group">
                         <label for="firstName">Nombre</label>
@@ -152,28 +150,17 @@ export default class Register {
         `;
         
         // Event listeners
-        this.modal.querySelector('#registerForm').addEventListener('submit', (e) => this.handleSubmit(e));
-        this.modal.querySelectorAll('input').forEach(input => {
+        this.container.querySelector('#registerForm').addEventListener('submit', (e) => this.handleSubmit(e));
+        this.container.querySelectorAll('input').forEach(input => {
             input.addEventListener('input', (e) => this.handleInputChange(e));
         });
         
-        this.modal.querySelector('.close-modal').addEventListener('click', () => {
-            document.body.removeChild(this.modal);
-        });
-        
-        this.modal.querySelector('#loginLink').addEventListener('click', (e) => {
+        this.container.querySelector('#loginLink').addEventListener('click', (e) => {
             e.preventDefault();
-            document.body.removeChild(this.modal);
-            // Aquí se abriría el modal de login
+            window.history.pushState({}, '', '/login');
+            window.dispatchEvent(new PopStateEvent('popstate'));
         });
         
-        // Cerrar modal al hacer clic fuera
-        this.modal.addEventListener('click', (e) => {
-            if (e.target === this.modal) {
-                document.body.removeChild(this.modal);
-            }
-        });
-        
-        return this.modal;
+        return this.container;
     }
 }

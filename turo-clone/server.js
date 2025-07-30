@@ -91,7 +91,7 @@ const start = async () => {
         await app.register(vehicleRoutes, { prefix: '/api/vehicles' });
         await app.register(paymentRoutes);
         await app.register(reservationRoutes);
-        await app.register(stripeRoutes); // Registrar rutas de Stripe
+        await app.register(stripeRoutes, { prefix: '/api/stripe' }); // Registrar rutas de Stripe con prefijo
         await app.register(adminRoutes, { prefix: '/api/admin' }); // Registrar rutas de admin
 
         // Ruta principal

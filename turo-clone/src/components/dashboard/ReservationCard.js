@@ -36,12 +36,10 @@ export default class ReservationCard {
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
         const isGuest = this.reservation.guest._id === currentUser._id;
         const role = isGuest ? 'Huésped' : 'Anfitrión';
-        const otherUser = isGuest ? this.reservation.host : this.reservation.guest;
         
         return `
             <div class="reservation-role">
                 <p><strong>Tu rol:</strong> ${role}</p>
-                <p><strong>${isGuest ? 'Anfitrión' : 'Huésped'}:</strong> ${otherUser.name}</p>
             </div>
         `;
     }
@@ -86,9 +84,6 @@ export default class ReservationCard {
                 <div class="reservation-dates">
                     <p><strong>Desde:</strong> ${formatDate(this.reservation.startDate)}</p>
                     <p><strong>Hasta:</strong> ${formatDate(this.reservation.endDate)}</p>
-                </div>
-                <div class="reservation-location">
-                    <p><strong>Ubicación:</strong> ${this.reservation.vehicle.location}</p>
                 </div>
                 ${this.renderPickupCodes()}
                 <div class="reservation-total">
