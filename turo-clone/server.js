@@ -17,6 +17,7 @@ import vehicleRoutes from './backend/routes/vehicles.js';
 import paymentRoutes from './backend/routes/payment.js';
 import reservationRoutes from './backend/routes/reservations.js';
 import stripeRoutes from './backend/routes/stripe.js'; // Importar rutas de Stripe
+import webhookRoutes from './backend/routes/webhook.js'; // Importar rutas de webhook
 import adminRoutes from './backend/routes/admin.js'; // Importar rutas de admin
 
 
@@ -118,6 +119,7 @@ const start = async () => {
         await app.register(paymentRoutes);
         await app.register(reservationRoutes);
         await app.register(stripeRoutes, { prefix: '/api/stripe' }); // Registrar rutas de Stripe con prefijo
+        await app.register(webhookRoutes); // Registrar rutas de webhook
         await app.register(adminRoutes, { prefix: '/api/admin' }); // Registrar rutas de admin
 
         // Ruta principal
