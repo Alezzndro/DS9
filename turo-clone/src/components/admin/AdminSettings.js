@@ -13,7 +13,7 @@ export default class AdminSettings {
             },
             business: {
                 commission: 15,
-                currency: 'EUR',
+                currency: 'USD',
                 minRentalDays: 1,
                 maxRentalDays: 30,
                 cancellationHours: 24,
@@ -157,9 +157,7 @@ export default class AdminSettings {
                 <div class="setting-item">
                     <label>Moneda</label>
                     <select onchange="window.adminApp.settings.handleSettingChange('business', 'currency', this.value)">
-                        <option value="EUR" ${this.settings.business.currency === 'EUR' ? 'selected' : ''}>EUR (€)</option>
                         <option value="USD" ${this.settings.business.currency === 'USD' ? 'selected' : ''}>USD ($)</option>
-                        <option value="GBP" ${this.settings.business.currency === 'GBP' ? 'selected' : ''}>GBP (£)</option>
                     </select>
                 </div>
                 

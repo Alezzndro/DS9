@@ -97,7 +97,7 @@ export default class AdminDashboard {
     formatCurrency(amount) {
         return new Intl.NumberFormat('es-ES', {
             style: 'currency',
-            currency: 'EUR'
+            currency: 'USD'
         }).format(amount);
     }
 

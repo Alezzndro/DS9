@@ -131,7 +131,7 @@ export default class AdminAnalytics {
         if (revenueCard) {
             const valueEl = revenueCard.querySelector('.metric-value');
             const growthEl = revenueCard.querySelector('.metric-growth');
-            if (valueEl) valueEl.textContent = `€${this.analytics.totalRevenue?.toLocaleString() || '0'}`;
+            if (valueEl) valueEl.textContent = `$${this.analytics.totalRevenue?.toLocaleString() || '0'}`;
             if (growthEl) {
                 growthEl.textContent = `${this.analytics.revenueGrowth >= 0 ? '+' : ''}${this.analytics.revenueGrowth?.toFixed(1) || '0'}%`;
                 growthEl.className = `metric-growth ${this.analytics.revenueGrowth >= 0 ? 'positive' : 'negative'}`;
@@ -185,7 +185,7 @@ export default class AdminAnalytics {
                         <span class="item-name">${vehicle.name}</span>
                         <span class="item-detail">${vehicle.bookings} reservaciones</span>
                     </div>
-                    <div class="item-value">€${vehicle.revenue?.toLocaleString() || '0'}</div>
+                    <div class="item-value">$${vehicle.revenue?.toLocaleString() || '0'}</div>
                 </div>
             `).join('');
         }
@@ -199,7 +199,7 @@ export default class AdminAnalytics {
                         <span class="item-name">${user.name}</span>
                         <span class="item-detail">${user.bookings} reservaciones</span>
                     </div>
-                    <div class="item-value">€${user.totalSpent?.toLocaleString() || '0'}</div>
+                    <div class="item-value">$${user.totalSpent?.toLocaleString() || '0'}</div>
                 </div>
             `).join('');
         }
@@ -244,7 +244,7 @@ export default class AdminAnalytics {
         const kpis = [
             {
                 title: 'Ingresos Totales',
-                value: `€${stats.totalRevenue?.toLocaleString() || '0'}`,
+                value: `$${stats.totalRevenue?.toLocaleString() || '0'}`,
                 change: `${stats.revenueGrowth >= 0 ? '+' : ''}${stats.revenueGrowth?.toFixed(1) || '0'}%`,
                 changeType: stats.revenueGrowth >= 0 ? 'positive' : 'negative',
                 icon: 'icon-money'
@@ -471,7 +471,7 @@ export default class AdminAnalytics {
                         ${topCities?.map(city => `
                             <div class="stat-entry">
                                 <span>${city.city}</span>
-                                <span class="stat-value">€${city.revenue?.toLocaleString() || '0'}</span>
+                                <span class="stat-value">$${city.revenue?.toLocaleString() || '0'}</span>
                             </div>
                         `).join('') || '<div class="stat-entry"><span>No hay datos</span></div>'}
                     </div>
@@ -483,7 +483,7 @@ export default class AdminAnalytics {
                         ${topHosts?.map(host => `
                             <div class="stat-entry">
                                 <span>${host.name}</span>
-                                <span class="stat-value">€${host.revenue?.toLocaleString() || '0'}</span>
+                                <span class="stat-value">$${host.revenue?.toLocaleString() || '0'}</span>
                             </div>
                         `).join('') || '<div class="stat-entry"><span>No hay datos</span></div>'}
                     </div>

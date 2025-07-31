@@ -237,7 +237,7 @@ export default class AdminUsers {
                         <div class="detail-group">
                             <h3>Estadísticas</h3>
                             <p><strong>Total reservaciones:</strong> ${user.totalReservations}</p>
-                            <p><strong>Total gastado:</strong> €${user.totalSpent.toFixed(2)}</p>
+                            <p><strong>Total gastado:</strong> $${user.totalSpent.toFixed(2)}</p>
                             ${user.vehiclesCount ? `<p><strong>Vehículos publicados:</strong> ${user.vehiclesCount}</p>` : ''}
                             <p><strong>Estado documentos:</strong> <span class="status ${user.documentsStatus}">${user.documentsStatus}</span></p>
                         </div>
@@ -506,7 +506,7 @@ export default class AdminUsers {
                                 </span>
                             </td>
                             <td>${user.totalReservations}</td>
-                            <td>€${user.totalSpent.toFixed(2)}</td>
+                            <td>$${user.totalSpent.toFixed(2)}</td>
                             <td>
                                 <div class="action-buttons">
                                     <button class="btn-icon" onclick="window.adminApp.users.handleUserAction('${user.id}', 'view')" title="Ver detalles">

@@ -55,7 +55,7 @@ export default class UserProfile {
         // Supón que tienes el usuario cargado en la variable 'user'
         const balanceDiv = document.createElement('div');
         balanceDiv.className = 'user-balance';
-        balanceDiv.innerHTML = `<strong>Balance disponible:</strong> €${this.user.balance ? this.user.balance.toFixed(2) : '0.00'}`;
+        balanceDiv.innerHTML = `<strong>Balance disponible:</strong> $${this.user.balance ? this.user.balance.toFixed(2) : '0.00'}`;
         profile.appendChild(balanceDiv);
         
         return profile;

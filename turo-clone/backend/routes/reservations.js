@@ -63,7 +63,9 @@ export default async function reservationRoutes(fastify, options) {
             }
 
             // Calcular precio total
-            const days = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
+            const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
+            const calculatedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const days = calculatedDays === 0 ? 1 : calculatedDays; // Mínimo 1 día si es el mismo día
             const totalPrice = days * vehicle.pricePerDay;
 
             const status = completedDirectPay ? 'completed' : 'pending';

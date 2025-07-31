@@ -168,12 +168,27 @@ export default class VehicleForm {
                     body: formData
                 });
                 console.log('📡 Respuesta del servidor:', response.status, response.statusText);
+                
                 if (!response.ok) {
-                    const error = await response.json();
-                    console.error('❌ Error en la respuesta:', error);
-                    throw new Error(error.message || 'Error subiendo imagen');
+                    let errorMessage = 'Error subiendo imagen';
+                    try {
+                        const error = await response.json();
+                        errorMessage = error.message || errorMessage;
+                    } catch (parseError) {
+                        console.error('Error parsing error response:', parseError);
+                        errorMessage = `Error ${response.status}: ${response.statusText}`;
+                    }
+                    throw new Error(errorMessage);
                 }
-                const result = await response.json();
+                
+                let result;
+                try {
+                    result = await response.json();
+                } catch (parseError) {
+                    console.error('Error parsing successful response:', parseError);
+                    throw new Error('Respuesta del servidor inválida');
+                }
+                
                 console.log('✅ Imagen subida exitosamente:', result);
                 // Reemplazar la imagen temporal por la real en el array de imágenes
                 const tempIdx = this.state.images.findIndex(img => img.isTemp && img.url === imageData.url);
@@ -512,7 +527,7 @@ export default class VehicleForm {
                             <h3>Precio</h3>
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="pricePerDay">Precio por día (€) *</label>
+                                    <label for="pricePerDay">Precio por día ($) *</label>
                                     <input type="number" name="pricePerDay" id="pricePerDay" 
                                            value="${this.state.pricePerDay}" min="1" step="0.01" required>
                                 </div>

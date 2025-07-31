@@ -312,7 +312,7 @@ export default class AdminVehicles {
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="newVehiclePrice">Precio por día (€):</label>
+                                <label for="newVehiclePrice">Precio por día ($):</label>
                                 <input type="number" id="newVehiclePrice" name="pricePerDay" min="1" step="0.01" required>
                             </div>
                             <div class="form-group">
@@ -598,7 +598,7 @@ export default class AdminVehicles {
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="editVehiclePrice">Precio por día (€):</label>
+                                <label for="editVehiclePrice">Precio por día ($):</label>
                                 <input type="number" id="editVehiclePrice" value="${vehicle.pricePerDay || 0}" min="1" step="0.01" required>
                             </div>
                             <div class="form-group">
@@ -716,7 +716,7 @@ export default class AdminVehicles {
                             <p><strong>Marca:</strong> ${vehicle.make}</p>
                             <p><strong>Modelo:</strong> ${vehicle.model}</p>
                             <p><strong>Año:</strong> ${vehicle.year}</p>
-                            <p><strong>Precio por día:</strong> €${vehicle.price}</p>
+                            <p><strong>Precio por día:</strong> $${vehicle.price}</p>
                             <p><strong>Ubicación:</strong> ${vehicle.location}</p>
                             <p><strong>Estado:</strong> <span class="status ${vehicle.status}">${vehicle.status}</span></p>
                             <p><strong>Fecha de registro:</strong> ${new Date(vehicle.createdAt).toLocaleDateString()}</p>
@@ -731,7 +731,7 @@ export default class AdminVehicles {
                         <div class="detail-group">
                             <h3>Estadísticas</h3>
                             <p><strong>Reservaciones totales:</strong> ${vehicle.totalReservations}</p>
-                            <p><strong>Ingresos totales:</strong> €${vehicle.totalEarnings}</p>
+                            <p><strong>Ingresos totales:</strong> $${vehicle.totalEarnings}</p>
                             <p><strong>Calificación:</strong> ${vehicle.rating > 0 ? `${vehicle.rating}/5` : 'Sin calificaciones'}</p>
                         </div>
                         
@@ -883,11 +883,11 @@ export default class AdminVehicles {
                                 </div>
                             </td>
                             <td>${vehicle.ownerName}</td>
-                            <td>€${vehicle.price}</td>
+                            <td>$${vehicle.price}</td>
                             <td>${vehicle.location}</td>
                             <td><span class="status-badge ${vehicle.status || 'undefined'}">${vehicle.status || 'UNDEFINED'}</span></td>
                             <td>${vehicle.totalReservations}</td>
-                            <td>€${vehicle.totalEarnings}</td>
+                            <td>$${vehicle.totalEarnings}</td>
                             <td>${vehicle.rating > 0 ? `${vehicle.rating}/5 ⭐` : 'N/A'}</td>
                             <td>
                                 <div class="action-buttons">

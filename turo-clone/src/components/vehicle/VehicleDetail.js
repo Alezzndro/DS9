@@ -85,8 +85,10 @@ export default class VehicleDetail {
         if (!this.state.startDate || !this.state.endDate) return 0;
         const start = new Date(this.state.startDate);
         const end = new Date(this.state.endDate);
-        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-        return days * this.vehicle.pricePerDay;
+        const diffTime = Math.abs(end - start);
+        const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const totalDays = days === 0 ? 1 : days; // Mínimo 1 día si es el mismo día
+        return totalDays * this.vehicle.pricePerDay;
     }
 
     handleDateChange(e) {

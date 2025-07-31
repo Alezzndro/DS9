@@ -88,7 +88,17 @@ export async function uploadFile(endpoint, file, fieldName = 'file') {
             body: formData
         });
 
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch (parseError) {
+            console.error('Error parsing response:', parseError);
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            } else {
+                throw new Error('Respuesta del servidor inválida');
+            }
+        }
 
         if (!response.ok) {
             throw new Error(data.message || 'File upload failed');

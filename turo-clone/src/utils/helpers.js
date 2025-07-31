@@ -6,9 +6,9 @@ export const navigateTo = (url) => {
 };
 
 export const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('es-ES', {
+    return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'EUR'
+        currency: 'USD'
     }).format(amount);
 };
 
@@ -32,7 +32,8 @@ export const calculateTotalDays = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = Math.abs(end - start);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return days === 0 ? 1 : days; // Mínimo 1 día si es el mismo día
 };
 
 export const generateRandomCode = (length = 6) => {

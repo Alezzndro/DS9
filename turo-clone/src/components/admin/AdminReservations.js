@@ -322,14 +322,14 @@ export default class AdminReservations {
                         
                         <div class="detail-group">
                             <h3>Información de Pago</h3>
-                            <p><strong>Monto total:</strong> €${reservation.totalAmount.toFixed(2)}</p>
+                            <p><strong>Monto total:</strong> $${reservation.totalAmount.toFixed(2)}</p>
                             <p><strong>Estado del pago:</strong> <span class="status ${reservation.paymentStatus}">${reservation.paymentStatus}</span></p>
                         </div>
                         
                         <div class="detail-group">
                             <h3>Duración</h3>
                             <p><strong>Días:</strong> ${Math.ceil((new Date(reservation.endDate) - new Date(reservation.startDate)) / (1000 * 60 * 60 * 24))}</p>
-                            <p><strong>Precio por día:</strong> €${(reservation.totalAmount / Math.ceil((new Date(reservation.endDate) - new Date(reservation.startDate)) / (1000 * 60 * 60 * 24))).toFixed(2)}</p>
+                            <p><strong>Precio por día:</strong> $${(reservation.totalAmount / Math.ceil((new Date(reservation.endDate) - new Date(reservation.startDate)) / (1000 * 60 * 60 * 24))).toFixed(2)}</p>
                         </div>
                     </div>
                 </div>
@@ -392,7 +392,7 @@ export default class AdminReservations {
                         </div>
                         
                         <div class="form-group full-width">
-                            <label for="editTotalAmount">Monto Total (€):</label>
+                            <label for="editTotalAmount">Monto Total ($):</label>
                             <input type="number" id="editTotalAmount" value="${reservation.totalAmount}" min="0" step="0.01" required>
                         </div>
                     </form>
@@ -552,7 +552,7 @@ export default class AdminReservations {
                                 </div>
                             </td>
                             <td>${reservation.location}</td>
-                            <td><strong>€${reservation.totalAmount.toFixed(2)}</strong></td>
+                            <td><strong>$${reservation.totalAmount.toFixed(2)}</strong></td>
                             <td><span class="status-badge ${reservation.status}">${reservation.status}</span></td>
                             <td><span class="status-badge ${reservation.paymentStatus}">${reservation.paymentStatus}</span></td>
                             <td>

@@ -140,7 +140,7 @@ export default class VehicleCard {
                 <h3>${this.vehicle.make} ${this.vehicle.model} (${this.vehicle.year})</h3>
                 <p><strong>Ubicación:</strong> ${locationText}</p>
                 <p><strong>Asientos:</strong> ${this.vehicle.seats}</p>
-                <p><strong>Precio por día:</strong> ${formatCurrency(this.vehicle.pricePerDay)} €</p>
+                <p><strong>Precio por día:</strong> ${formatCurrency(this.vehicle.pricePerDay)} $</p>
                 ${this.renderRatingStars()}
             </div>
             ${this.renderOwnerActions()}

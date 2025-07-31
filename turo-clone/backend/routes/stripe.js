@@ -29,7 +29,7 @@ export default async function stripeRoutes(fastify, options) {
                 payment_method_types: ['card'],
                 line_items: [{
                     price_data: {
-                        currency: 'eur',
+                        currency: 'usd',
                         product_data: {
                             name: `${reservation.vehicle.make} ${reservation.vehicle.model}`,
                         },
